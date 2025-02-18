@@ -13,8 +13,8 @@ public class TestServiceImpl implements TestService {
     public void executeTest() {
         questionDao.findAll()
                 .forEach(question -> {
-                    ioService.printLine(question.getText());
-                    question.getAnswers()
+                    ioService.printLine(question.text());
+                    question.answers()
                             .forEach(answer ->
                                     ioService.printFormattedLine("- %s%s", answer.text(),
                                             answer.isCorrect() ? "; correct" : ""));
