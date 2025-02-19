@@ -1,7 +1,10 @@
 package com.galaxy13.hw.service;
 
 import com.galaxy13.hw.dao.QuestionDao;
+import com.galaxy13.hw.domain.Answer;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 public class TestServiceImpl implements TestService {
@@ -11,13 +14,16 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void executeTest() {
-        questionDao.findAll()
-                .forEach(question -> {
+        questionDao.findAll().forEach(
+                question -> {
                     ioService.printLine(question.text());
-                    question.answers()
-                            .forEach(answer ->
-                                    ioService.printFormattedLine("- %s%s", answer.text(),
-                                            answer.isCorrect() ? "; correct" : ""));
-                });
+                    List<Answer> answers = question.answers();
+                    for (int i = 0; i < answers.size(); i++) {
+                        Answer answer = answers.get(i);
+                        ioService.printFormattedLine(i + 1 + ". %s%s", answer.text(),
+                                answer.isCorrect() ? "; correct" : "");
+                    }
+                }
+        );
     }
 }
