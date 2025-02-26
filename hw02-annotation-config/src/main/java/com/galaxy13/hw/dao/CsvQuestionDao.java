@@ -6,6 +6,7 @@ import com.galaxy13.hw.domain.Question;
 import com.galaxy13.hw.exception.QuestionReadException;
 import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 @RequiredArgsConstructor
+@Repository
 public class CsvQuestionDao implements QuestionDao {
     private final TestFileNameProvider testFileNameProvider;
 

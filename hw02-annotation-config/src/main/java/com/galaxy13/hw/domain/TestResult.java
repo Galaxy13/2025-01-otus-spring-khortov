@@ -25,7 +25,7 @@ public class TestResult {
         }
     }
 
-    public int getRightAnswersPercentage(){
+    public int getRightAnswersPercentage() {
         return (int) Math.floor((double) rightAnswersCount / answeredQuestions.size() * 100);
     }
 }
