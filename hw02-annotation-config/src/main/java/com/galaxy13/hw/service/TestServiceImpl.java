@@ -43,26 +43,15 @@ public class TestServiceImpl implements TestService {
         boolean isUserAnswerCorrect;
         if (answers.size() > 1) {
             outputAnswers(answers);
-            int correctAnswerIndex = findCorrectAnswerIndex(answers);
             int userAnswerIndex = ioService.readIntForRange(1,
                     answers.size(),
                     "Number is out of range. Try again!") - 1;
-            isUserAnswerCorrect = correctAnswerIndex == userAnswerIndex;
+            isUserAnswerCorrect = question.answers().get(userAnswerIndex).isCorrect();
         } else {
             String correctAnswer = answers.getFirst().text();
             String userAnswer = ioService.readStringWithPrompt("Enter full answer: ").trim();
             isUserAnswerCorrect = correctAnswer.equals(userAnswer);
         }
         testResult.applyAnswer(question, isUserAnswerCorrect);
-    }
-
-    private int findCorrectAnswerIndex(List<Answer> answers) {
-        for (int i = 0; i < answers.size(); i++) {
-            Answer answer = answers.get(i);
-            if (answer.isCorrect()) {
-                return i;
-            }
-        }
-        return -1;
     }
 }

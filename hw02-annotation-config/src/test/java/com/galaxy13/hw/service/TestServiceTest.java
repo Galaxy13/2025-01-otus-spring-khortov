@@ -190,7 +190,7 @@ class TestServiceTest {
 
         @Test
         void testOneOutOfFive() {
-            mockAnswers(3, 3, 1, "wrong ans", "wrong ans");
+            mockAnswers(3, 2, 1, "wrong ans", "wrong ans");
             var testResult = testService.executeTestFor(STUDENT);
             assertTestResult(testResult, 1, 20);
         }

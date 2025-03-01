@@ -1,10 +1,8 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import name.remal.gradle_plugins.sonarlint.SonarLintExtension
 
 plugins {
     id("java")
     id("name.remal.sonarlint") version "5.1.3"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
     checkstyle
 }
 
@@ -38,29 +36,6 @@ configure<SonarLintExtension> {
     nodeJs {
         detectNodeJs = false
         logNodeJsNotFound = false
-    }
-}
-
-tasks {
-    named<ShadowJar>("shadowJar") {
-        archiveBaseName.set("testApp")
-        archiveClassifier.set("")
-        manifest {
-            attributes(mapOf("Main-Class" to "com.galaxy13.hw.Application"))
-        }
-    }
-
-    build {
-        dependsOn(shadowJar)
-    }
-}
-
-tasks {
-    register<JavaExec>("run") {
-        group = "application"
-
-        dependsOn(shadowJar)
-        classpath = files("build/libs/testApp.jar")
     }
 }
 
