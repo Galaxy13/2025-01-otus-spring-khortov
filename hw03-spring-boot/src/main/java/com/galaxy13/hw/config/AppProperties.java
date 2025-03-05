@@ -1,7 +1,8 @@
 package com.galaxy13.hw.config;
 
-import com.galaxy13.hw.exception.QuestionReadException;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -10,27 +11,21 @@ import java.util.Map;
 
 @ConfigurationProperties(prefix = "application")
 @Slf4j
+@Getter
 public class AppProperties implements TestConfig, TestFileNameProvider, LocaleConfig {
-    // 'private' and 'final' modifiers are not needed because of the @lombok.Value annotation.
-    // They are added because of checkstyle rule [VisibilityModifier].
 
-    @Getter
     private final int rightAnswersPercentageToPass;
 
+    @Getter(AccessLevel.NONE)
     private final Map<String, String> fileNameByLocaleTag;
 
-    @Getter
     private final Locale locale;
 
-    public AppProperties(int rightAnswersPercentageToPass, Map<String, String> fileNameByLocaleTag, Locale locale) {
-        if (fileNameByLocaleTag == null || fileNameByLocaleTag.isEmpty()) {
-            throw new QuestionReadException("No locale file tag provided");
-        }
-        if (locale == null) {
-            throw new QuestionReadException("No appropriate locale provided");
-        }
+    public AppProperties(int rightAnswersPercentageToPass,
+                         @NonNull Map<String, String> fileNameByLocaleTag,
+                         @NonNull Locale locale) {
         if (rightAnswersPercentageToPass == 0) {
-            log.warn("Pass percentage is set to zero or not defined in application.yml. Test is unpassable");
+            log.warn("Passing percentage is set to zero or not defined in application.yml. Test is unpassable");
         }
         this.rightAnswersPercentageToPass = rightAnswersPercentageToPass;
         this.fileNameByLocaleTag = fileNameByLocaleTag;

@@ -1,6 +1,7 @@
 package com.galaxy13.hw.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ public class LocalizedIOServiceImpl implements LocalizedIOService {
     private final LocalizedMessageService localizedMessageService;
 
     @Qualifier("loggerIOService")
+    @Delegate(types = IOService.class)
     private final IOService ioService;
 
     @Override
@@ -38,35 +40,5 @@ public class LocalizedIOServiceImpl implements LocalizedIOService {
                 max,
                 localizedMessageService.getMessage(promptCode, max),
                 localizedMessageService.getMessage(errorMessageCode));
-    }
-
-    @Override
-    public void printLine(String line) {
-        ioService.printLine(line);
-    }
-
-    @Override
-    public void printFormattedLine(String format, Object... args) {
-        ioService.printFormattedLine(format, args);
-    }
-
-    @Override
-    public String readStringWithPrompt(String prompt) {
-        return ioService.readStringWithPrompt(prompt);
-    }
-
-    @Override
-    public String readString() {
-        return ioService.readString();
-    }
-
-    @Override
-    public int readIntForRange(int min, int max, String errorMessage) {
-        return ioService.readIntForRange(min, max, errorMessage);
-    }
-
-    @Override
-    public int readIntForRangeWithPrompt(int min, int max, String prompt, String errorMessage) {
-        return ioService.readIntForRangeWithPrompt(min, max, prompt, errorMessage);
     }
 }

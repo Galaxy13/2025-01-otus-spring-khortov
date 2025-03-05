@@ -6,7 +6,7 @@ spring:
 
 application:
   rightAnswersPercentageToPass: 80
-  locale: ru-RU235234
+  locale: ru-RU
   fileNameByLocaleTag:
     ru-RU: questions_ru.csv
     en-US: questions.csv
