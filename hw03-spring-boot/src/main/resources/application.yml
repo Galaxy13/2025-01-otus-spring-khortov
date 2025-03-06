@@ -5,6 +5,8 @@ spring:
     fallback-to-system-locale: false
 
 application:
+  services:
+    ioService: loggerIO # available IO services: loggerIO (default), streamsIO
   rightAnswersPercentageToPass: 80
   locale: ru-RU
   fileNameByLocaleTag:

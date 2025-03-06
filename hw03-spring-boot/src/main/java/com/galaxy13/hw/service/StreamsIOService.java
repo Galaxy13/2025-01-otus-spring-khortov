@@ -1,53 +1,48 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.exception.QuestionReadException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedInputStream;
 import java.io.InputStream;
-import java.util.IllegalFormatException;
+import java.io.PrintStream;
+import java.text.MessageFormat;
 import java.util.Scanner;
 
 @Service
-@ConditionalOnProperty(prefix = "application.services",
-        name = "ioService", havingValue = "loggerIO", matchIfMissing = true)
-@Slf4j
-public class LoggerIOService implements IOService {
+@ConditionalOnProperty(prefix = "application.services", name = "ioService", havingValue = "streamsIO")
+public class StreamsIOService implements IOService {
     private static final int MAX_ATTEMPTS = 10;
+
+    private final PrintStream printStream;
 
     private final Scanner scanner;
 
-    public LoggerIOService(@Value("#{T(System).in}") InputStream inputStream) {
-        scanner = new Scanner(new BufferedInputStream(inputStream));
+    public StreamsIOService(@Value("#{T(System).out}") PrintStream printStream,
+                            @Value("#{T(System).in}") InputStream inputStream) {
+
+        this.printStream = printStream;
+        this.scanner = new Scanner(inputStream);
     }
 
     @Override
-    public void printLine(String line) {
-        log.info(line);
+    public void printLine(String s) {
+        printStream.println(s);
     }
 
     @Override
-    public void printFormattedLine(String format, Object... args) {
-        String formatted;
-        try {
-            formatted = String.format(format, args);
-        } catch (IllegalFormatException e) {
-            throw new QuestionReadException("Incompatible line format", e);
-        }
-        log.info(formatted);
+    public void printFormattedLine(String s, Object... args) {
+        printStream.println(MessageFormat.format(s, args));
+    }
+
+    @Override
+    public String readString() {
+        return scanner.nextLine();
     }
 
     @Override
     public String readStringWithPrompt(String prompt) {
         printLine(prompt);
-        return scanner.nextLine();
-    }
-
-    @Override
-    public String readString() {
         return scanner.nextLine();
     }
 
@@ -70,7 +65,7 @@ public class LoggerIOService implements IOService {
 
     @Override
     public int readIntForRangeWithPrompt(int min, int max, String prompt, String errorMessage) {
-        log.info(prompt);
+        printLine(prompt);
         return readIntForRange(min, max, errorMessage);
     }
 }
