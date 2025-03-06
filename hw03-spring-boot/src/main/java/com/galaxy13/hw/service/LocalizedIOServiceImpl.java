@@ -2,7 +2,6 @@ package com.galaxy13.hw.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 public class LocalizedIOServiceImpl implements LocalizedIOService {
     private final LocalizedMessageService localizedMessageService;
 
-    @Qualifier("loggerIOService")
     @Delegate(types = IOService.class)
     private final IOService ioService;
 

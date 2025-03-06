@@ -3,6 +3,7 @@ package com.galaxy13.hw.service;
 import com.galaxy13.hw.exception.QuestionReadException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedInputStream;
@@ -11,6 +12,7 @@ import java.util.IllegalFormatException;
 import java.util.Scanner;
 
 @Service
+@Primary
 @Slf4j
 public class LoggerIOService implements IOService {
     private static final int MAX_ATTEMPTS = 10;
