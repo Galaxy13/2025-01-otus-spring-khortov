@@ -6,11 +6,13 @@ import com.galaxy13.hw.domain.Question;
 import com.galaxy13.hw.domain.Student;
 import com.galaxy13.hw.domain.TestResult;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -18,13 +20,17 @@ import static com.galaxy13.hw.TestHelper.constructQuestion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
 class TestServiceHwTest {
     private static final Student STUDENT = Mockito.mock(Student.class);
 
+    @Autowired
     private TestService testService;
 
+    @MockitoBean
     private QuestionDao questionDao;
 
+    @MockitoBean
     private LocalizedIOService ioService;
 
     @BeforeAll
@@ -32,13 +38,6 @@ class TestServiceHwTest {
         when(STUDENT.firstName()).thenReturn("Rick");
         when(STUDENT.lastName()).thenReturn("Deckard");
         when(STUDENT.getFullName()).thenReturn("Rick Deckard");
-    }
-
-    @BeforeEach
-    void setUp() {
-        ioService = Mockito.mock(LocalizedIOService.class);
-        questionDao = Mockito.mock(QuestionDao.class);
-        testService = new TestServiceImpl(ioService, questionDao);
     }
 
     @Test

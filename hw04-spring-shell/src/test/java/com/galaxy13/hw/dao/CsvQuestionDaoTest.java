@@ -4,9 +4,10 @@ import com.galaxy13.hw.config.TestFileNameProvider;
 import com.galaxy13.hw.domain.Answer;
 import com.galaxy13.hw.domain.Question;
 import com.galaxy13.hw.exception.QuestionReadException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -14,16 +15,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest(classes = CsvQuestionDao.class)
 class CsvQuestionDaoTest {
+    @MockitoBean
     private TestFileNameProvider fileNameProvider;
 
+    @Autowired
     private QuestionDao dao;
-
-    @BeforeEach
-    void setUp() {
-        this.fileNameProvider = Mockito.mock(TestFileNameProvider.class);
-        this.dao = new CsvQuestionDao(fileNameProvider);
-    }
 
     @Test
     void throwsExceptionOnAbsentFileTest() {
