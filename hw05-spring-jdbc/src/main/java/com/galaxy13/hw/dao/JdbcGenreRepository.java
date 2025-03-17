@@ -1,10 +1,12 @@
 package com.galaxy13.hw.dao;
 
 import com.galaxy13.hw.model.Genre;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
 
+@Repository
 public class JdbcGenreRepository implements GenreRepository {
     @Override
     public List<Genre> findAllGenres() {
