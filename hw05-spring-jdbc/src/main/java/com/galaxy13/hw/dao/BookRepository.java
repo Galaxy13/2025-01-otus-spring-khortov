@@ -5,13 +5,14 @@ import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Genre;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookRepository {
     List<Book> findAllBooks();
 
-    Book findBookById(long id);
+    Optional<Book> findBookById(long id);
 
-    Book findBookByTitle(String title);
+    Optional<Book> findBookByTitle(String title);
 
     List<Book> booksByAuthor(Author author);
 
