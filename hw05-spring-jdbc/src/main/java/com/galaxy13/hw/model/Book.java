@@ -2,7 +2,7 @@ package com.galaxy13.hw.model;
 
 import lombok.Data;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 public class Book {
@@ -12,5 +12,5 @@ public class Book {
 
     private final Author author;
 
-    private final List<Genre> genres;
+    private Set<Genre> genres;
 }
