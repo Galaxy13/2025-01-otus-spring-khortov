@@ -38,19 +38,19 @@ public class JdbcBookRepository implements BookRepository {
                         SELECT
                             b.id,
                             b.title,
-                            b.authorId,
+                            b.author_id,
                             a.firstName,
                             a.lastName,
-                            ARRAY_AGG(g2.id) AS genreIds,
-                            ARRAY_AGG(g2.genreTitle) AS genreTitles
+                            ARRAY_AGG(g2.id) AS genre_ids,
+                            ARRAY_AGG(g2.genre_title) AS genre_titles
                         FROM
                             books AS b
                         JOIN
-                            genres_relationships AS gR ON b.id = gR.bookId
+                            genres_relationships AS gR ON b.id = gR.book_id
                         JOIN
-                            genres AS g2 ON gR.genreId = g2.id
+                            genres AS g2 ON gR.genre_id = g2.id
                         JOIN
-                            authors AS a ON b.authorId = a.id
+                            authors AS a ON b.author_id = a.id
                         GROUP BY
                             b.id
                         ORDER BY
@@ -64,19 +64,19 @@ public class JdbcBookRepository implements BookRepository {
                         SELECT
                             b.id,
                             b.title,
-                            b.authorId,
+                            b.author_id,
                             a.firstName,
                             a.lastName,
-                            ARRAY_AGG(g2.id) AS genreIds,
-                            ARRAY_AGG(g2.genreTitle) AS genreTitles
+                            ARRAY_AGG(g2.id) AS genre_ids,
+                            ARRAY_AGG(g2.genre_title) AS genre_titles
                         FROM
                             books AS b
                                 JOIN
-                            genres_relationships AS gR ON b.id = gR.bookId
+                            genres_relationships AS gR ON b.id = gR.book_id
                                 JOIN
-                            genres AS g2 ON gR.genreId = g2.id
+                            genres AS g2 ON gR.genre_id = g2.id
                                 JOIN
-                            authors AS a ON b.authorId = a.id
+                            authors AS a ON b.author_id = a.id
                         WHERE
                             b.id = :id
                         GROUP BY
@@ -98,11 +98,12 @@ public class JdbcBookRepository implements BookRepository {
 
     private Book insertBook(Book book) {
         var parameterSource = new MapSqlParameterSource();
-        parameterSource.addValue(book.getTitle(), book.getAuthor().getId());
+        parameterSource.addValue("title", book.getTitle())
+                .addValue("authorId", book.getAuthor().getId());
         KeyHolder keyHolder = new GeneratedKeyHolder();
         namedJdbcTemplate.update("""
                 INSERT into BOOKS
-                    (TITLE, AUTHORID)
+                    (TITLE, AUTHOR_ID)
                 VALUES ( :title, :authorId )""", parameterSource, keyHolder);
         book.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         batchInsertGenreRelations(book);
@@ -121,11 +122,11 @@ public class JdbcBookRepository implements BookRepository {
     private void batchInsertGenreRelations(Book book) {
         namedJdbcTemplate.batchUpdate("""
                 INSERT into GENRES_RELATIONSHIPS
-                    (BOOKID, GENREID)
+                    (BOOK_ID, GENRE_ID)
                 VALUES ( :bookId, :genreId )""", SqlParameterSourceUtils.createBatch(
                 book.getGenres().stream().map(genre ->
                         new BookToGenreRelation(book.getId(), genre.getId())
-                )));
+                ).toList()));
     }
 
     private <T> T getNullableResult(Supplier<T> supplier) {
@@ -151,15 +152,15 @@ public class JdbcBookRepository implements BookRepository {
         }
 
         private Author getAuthor(ResultSet rs) throws SQLException {
-            long authorId = rs.getLong("authorId");
+            long authorId = rs.getLong("author_id");
             String firstName = rs.getString("firstName");
             String lastName = rs.getString("lastName");
             return new Author(authorId, firstName, lastName);
         }
 
         private void addGenresToBook(ResultSet rs, Book book) throws SQLException {
-            Object[] genreIds = (Object[]) rs.getArray("genreIds").getArray();
-            Object[] genreTitles = (Object[]) rs.getArray("genreTitles").getArray();
+            Object[] genreIds = (Object[]) rs.getArray("genre_ids").getArray();
+            Object[] genreTitles = (Object[]) rs.getArray("genre_titles").getArray();
             for (int i = 0; i < genreIds.length; i++) {
                 if (genreIds[i] instanceof Long genreId && genreTitles[i] instanceof String genreTitle) {
                     book.addGenre(new Genre(genreId, genreTitle));

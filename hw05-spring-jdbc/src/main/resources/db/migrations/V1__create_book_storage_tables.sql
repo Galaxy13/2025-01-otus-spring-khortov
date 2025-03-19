@@ -3,32 +3,32 @@ drop table if exists genres_relationships, authorRelationships, books, authors, 
 create table authors
 (
     id        bigserial primary key,
-    firstName varchar(255) not null,
+    firstname varchar(255) not null,
     lastName  varchar(255)
 );
 
 create table genres
 (
     id         bigserial primary key,
-    genreTitle varchar(255) not null unique
+    genre_title varchar(255) not null unique
 );
 
 create table books
 (
     id       bigserial primary key,
     title    varchar(255) not null unique,
-    authorId bigint references authors (id) on delete cascade
+    author_id bigint references authors (id) on delete cascade
 );
 
 create table genres_relationships
 (
-    bookId  bigint references books (id) on delete cascade,
-    genreId bigint references genres (id) on delete cascade,
-    primary key (bookId, genreId)
+    book_id  bigint references books (id) on delete cascade,
+    genre_id bigint references genres (id) on delete cascade,
+    primary key (book_id, genre_id)
 );
 
 alter table authors
-    add constraint authorCreds unique (firstName, lastName);
+    add constraint authorCreds unique (firstname, lastName);
 
 alter table books
-    add constraint bookAuthor unique (title, authorId);
+    add constraint bookAuthor unique (title, author_id);
