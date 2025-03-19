@@ -26,7 +26,7 @@ dependencies {
     implementation("org.springframework.shell:spring-shell-starter")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.flywaydb:flyway-core")
-    implementation("com.opencsv:opencsv:5.10")
+    runtimeOnly("com.h2database:h2")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

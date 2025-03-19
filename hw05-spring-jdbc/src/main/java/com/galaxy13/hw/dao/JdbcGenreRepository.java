@@ -19,7 +19,7 @@ public class JdbcGenreRepository implements GenreRepository {
     }
 
     @Override
-    public Genre findAllGenresByIds(Set<Long> ids) {
+    public List<Genre> findAllByIds(Set<Long> ids) {
         return null;
     }
 }

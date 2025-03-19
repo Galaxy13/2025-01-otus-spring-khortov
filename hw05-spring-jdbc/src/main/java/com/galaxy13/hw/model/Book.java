@@ -1,16 +1,26 @@
 package com.galaxy13.hw.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
+@AllArgsConstructor
 public class Book {
-    private final long id;
+    private long id;
 
-    private final String title;
+    private String title;
 
-    private final Author author;
+    private Author author;
 
-    private Set<Genre> genres;
+    private List<Genre> genres;
+
+    public void addGenre(Genre genre) {
+        if (genres == null) {
+            genres = new ArrayList<>();
+        }
+        genres.add(genre);
+    }
 }

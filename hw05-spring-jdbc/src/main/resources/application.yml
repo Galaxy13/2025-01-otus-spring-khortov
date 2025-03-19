@@ -4,8 +4,7 @@ spring:
       enabled: true
   datasource:
     url: jdbc:h2:mem:maindb
-  sql:
-    init:
-      mode: always
-      data-locations: data.sql
-      schema-locations: schema.sql
+    driver-class-name: org.h2.Driver
+  flyway:
+    locations: classpath:db/migrations
+    enabled: true

@@ -1,12 +1,14 @@
 package com.galaxy13.hw.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class Author {
-    private final long id;
+    private long id;
 
-    private final String firstName;
+    private String firstName;
 
-    private final String lastName;
+    private String lastName;
 }

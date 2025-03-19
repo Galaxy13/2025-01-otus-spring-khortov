@@ -10,5 +10,5 @@ public interface GenreRepository {
 
     Genre findGenreById(long id);
 
-    Genre findAllGenresByIds(Set<Long> ids);
+    List<Genre> findAllByIds(Set<Long> ids);
 }

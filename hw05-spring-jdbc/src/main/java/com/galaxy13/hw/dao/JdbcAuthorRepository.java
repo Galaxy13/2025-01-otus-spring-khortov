@@ -4,6 +4,7 @@ import com.galaxy13.hw.model.Author;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class JdbcAuthorRepository implements AuthorRepository {
@@ -13,12 +14,12 @@ public class JdbcAuthorRepository implements AuthorRepository {
     }
 
     @Override
-    public Author findById(long id) {
+    public Optional<Author> findById(long id) {
         return null;
     }
 
     @Override
-    public Author findByFullName(String firstName, String lastName) {
+    public Optional<Author> findByFullName(String firstName, String lastName) {
         return null;
     }
 }
