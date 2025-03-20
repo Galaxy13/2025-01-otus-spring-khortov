@@ -40,7 +40,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book update(long id, String title, long authorId, Set<Long> genreIds) {
-        return null;
+        return save(id, title, authorId, genreIds);
     }
 
     @Override

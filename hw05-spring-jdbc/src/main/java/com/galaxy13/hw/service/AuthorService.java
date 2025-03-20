@@ -9,4 +9,6 @@ public interface AuthorService {
     List<Author> findAllAuthors();
 
     Optional<Author> findAuthorById(long id);
+
+    Author saveAuthor(long id, String firstName, String lastName);
 }

@@ -1,5 +1,6 @@
 package com.galaxy13.hw.dao;
 
+import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Author;
 import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Genre;
@@ -26,10 +27,6 @@ public class JdbcBookRepository implements BookRepository {
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
 
     private final JdbcTemplate jdbcTemplate;
-
-    private final AuthorRepository authorRepository;
-
-    private final GenreRepository genreRepository;
 
     @Override
     public List<Book> findAllBooks() {
@@ -111,7 +108,17 @@ public class JdbcBookRepository implements BookRepository {
     }
 
     private Book updateBook(Book book) {
-        return null;
+        var parameterSource = new MapSqlParameterSource().addValue("id", book.getId())
+                .addValue("title", book.getTitle())
+                .addValue("authorId", book.getAuthor().getId());
+        if (namedJdbcTemplate.update("""
+                UPDATE BOOKS
+                SET
+                    TITLE = :title, AUTHOR_ID = :authorId
+                WHERE ID = :id""", parameterSource) == 0) {
+            throw new EntityNotFoundException("No book found with id: " + book.getId());
+        }
+        return book;
     }
 
     @Override

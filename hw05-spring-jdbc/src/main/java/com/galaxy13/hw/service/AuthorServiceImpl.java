@@ -20,6 +20,15 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Optional<Author> findAuthorById(long id) {
-        return Optional.empty();
+        return authorRepository.findById(id);
+    }
+
+    @Override
+    public Author saveAuthor(long id, String firstName, String lastName) {
+        if (firstName == null || lastName == null || firstName.isEmpty() || lastName.isEmpty()) {
+            throw new IllegalArgumentException("Name and/or surname can't be empty");
+        }
+        Author author = new Author(id, firstName, lastName);
+        return authorRepository.save(author);
     }
 }

@@ -12,4 +12,6 @@ public interface GenreRepository {
     Optional<Genre> findGenreById(long id);
 
     List<Genre> findAllByIds(Set<Long> ids);
+
+    Genre saveGenre(Genre genre);
 }
