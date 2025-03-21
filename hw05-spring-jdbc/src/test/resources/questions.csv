@@ -1,4 +1,0 @@
-#line skip
-question1;answer1%false|answer2%true|answer3%false
-question2;answer%true
-question3;test%false|test2%true

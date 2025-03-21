@@ -14,7 +14,7 @@ public class GenreCommands {
 
     private final GenreConverter genreConverter;
 
-    @Command(command = "find all", description = "Find all genres")
+    @Command(command = "find all", alias = "ag", description = "Find all genres")
     public String findAllGenres() {
         return genreService.findAllGenres()
                 .stream()
@@ -22,14 +22,14 @@ public class GenreCommands {
                 .collect(Collectors.joining("," + System.lineSeparator()));
     }
 
-    @Command(command = "find", description = "Find genre by id")
+    @Command(command = "find", alias = "gbid", description = "Find genre by id; params: {id: long}")
     public String findGenreById(long id) {
         return genreService.findGenreById(id)
                 .map(genreConverter::convertToString)
                 .orElse("Genre with id " + id + " not found");
     }
 
-    @Command(command = "insert", description = "Insert new genre")
+    @Command(command = "save", alias = "gins", description = "Insert new genre; params: {genreName: String}")
     public String insertGenre(String genreName) {
         var savedGenre = genreService.saveGenre(0, genreName);
         return genreConverter.convertToString(savedGenre);

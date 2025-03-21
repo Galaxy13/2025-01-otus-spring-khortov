@@ -1,17 +1,13 @@
 spring:
-  messages:
-    basename: messages
-    encoding: UTF-8
-    fallback-to-system-locale: false
   shell:
     interactive:
       enabled: false
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testDb;DB_CLOSE_DELAY=-1
 
-application:
-  services:
-    ioService: loggerIO # available IO services: loggerIO (default), streamsIO
-  rightAnswersPercentageToPass: 80
-  locale: ru-RU
-  fileNameByLocaleTag:
-    ru-RU: questions_ru.csv
-    en-US: questions.csv
+  sql:
+    init:
+      mode: always
+      data-locations: data.sql
+      schema-locations: schema.sql

@@ -1,4 +1,4 @@
-package com.galaxy13.hw.dao;
+package com.galaxy13.hw.repository;
 
 import com.galaxy13.hw.model.Genre;
 

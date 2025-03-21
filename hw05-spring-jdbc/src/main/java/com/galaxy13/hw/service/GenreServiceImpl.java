@@ -1,7 +1,7 @@
 package com.galaxy13.hw.service;
 
 
-import com.galaxy13.hw.dao.GenreRepository;
+import com.galaxy13.hw.repository.GenreRepository;
 import com.galaxy13.hw.model.Genre;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.galaxy13.hw.dao;
+package com.galaxy13.hw.repository;
 
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Genre;
@@ -14,9 +14,14 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
+@SuppressWarnings({"java:S6203", "java:S1192"})
 @Repository
 @RequiredArgsConstructor
 public class JdbcGenreRepository implements GenreRepository {

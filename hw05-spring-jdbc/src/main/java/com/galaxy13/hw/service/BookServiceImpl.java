@@ -1,8 +1,8 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dao.AuthorRepository;
-import com.galaxy13.hw.dao.BookRepository;
-import com.galaxy13.hw.dao.GenreRepository;
+import com.galaxy13.hw.repository.AuthorRepository;
+import com.galaxy13.hw.repository.BookRepository;
+import com.galaxy13.hw.repository.GenreRepository;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Book;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void deleteById(long id) {
-
+        bookRepository.deleteBookById(id);
     }
 
     private Book save(long id, String title, long authorId, Set<Long> genreIds) {

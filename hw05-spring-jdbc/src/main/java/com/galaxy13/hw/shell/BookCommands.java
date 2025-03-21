@@ -15,38 +15,35 @@ public class BookCommands {
 
     private final BookConverter bookConverter;
 
-    // book get all
-    @Command(description = "Find all books", command = "find all")
+    @Command(description = "Find all books", command = "find all", alias = "ab")
     public String findAllBooks() {
         return bookService.findAll().stream()
                 .map(bookConverter::convertToString)
                 .collect(Collectors.joining("," + System.lineSeparator()));
     }
 
-    // book get {id}
-    @Command(description = "Find book by id", command = "find")
+    @Command(description = "Find book by id; params: {id: long}", command = "find", alias = "bbid")
     public String findBookById(long id) {
         return bookService.findById(id)
                 .map(bookConverter::convertToString)
                 .orElse("Book with id %d not found".formatted(id));
     }
 
-    // book save {title} {authorId} {genreIds...}
-    @Command(description = "Insert book", command = "save")
+    @Command(description = "Insert book; params: {bookTitle: String} {authorId: long} {genresIds: long...}",
+            command = "save", alias = "bins")
     public String insertBook(String title, long authorId, Set<Long> genresIds) {
         var savedBook = bookService.insert(title, authorId, genresIds);
         return bookConverter.convertToString(savedBook);
     }
 
-    // book update {id} {title} {authorId} {genreIds...}
-    @Command(description = "Update book", command = "update")
+    @Command(description = "Update book; params: {id: long} {bookTitle: String} {authorId: long} {genresIds: long...}",
+            command = "update", alias = "bupd")
     public String updateBook(long id, String title, long authorId, Set<Long> genresIds) {
         var savedBook = bookService.update(id, title, authorId, genresIds);
         return bookConverter.convertToString(savedBook);
     }
 
-    // book delete {id}
-    @Command(description = "Delete book by id", command = "delete")
+    @Command(description = "Delete book by id; params: {id: long}", command = "delete", alias = "bdel")
     public void deleteBook(long id) {
         bookService.deleteById(id);
     }

@@ -1,4 +1,4 @@
-package com.galaxy13.hw.dao;
+package com.galaxy13.hw.repository;
 
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Author;
@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+@SuppressWarnings({"java:S6203", "java:S1192"})
 @Repository
 @RequiredArgsConstructor
 public class JdbcAuthorRepository implements AuthorRepository {
@@ -40,7 +41,7 @@ public class JdbcAuthorRepository implements AuthorRepository {
 
     @Override
     public Optional<Author> findById(long id) {
-        return getNullableResult(() -> Optional.ofNullable(namedParameterJdbcTemplate.queryForObject("""
+        return Optional.ofNullable(getNullableResult(() -> namedParameterJdbcTemplate.queryForObject("""
                 SELECT
                     ID,
                     FIRSTNAME,
@@ -52,7 +53,7 @@ public class JdbcAuthorRepository implements AuthorRepository {
 
     @Override
     public Optional<Author> findByFullName(String firstName, String lastName) {
-        return getNullableResult(() -> Optional.ofNullable(namedParameterJdbcTemplate.queryForObject("""
+        return Optional.ofNullable(getNullableResult(() -> namedParameterJdbcTemplate.queryForObject("""
                 SELECT
                     ID,
                     FIRSTNAME,

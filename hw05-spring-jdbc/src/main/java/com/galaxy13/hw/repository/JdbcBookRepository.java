@@ -1,4 +1,4 @@
-package com.galaxy13.hw.dao;
+package com.galaxy13.hw.repository;
 
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Author;
@@ -18,9 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Map;
+import java.util.ArrayList;
 import java.util.function.Supplier;
 
+@SuppressWarnings({"java:S6203", "java:S1192"})
 @Repository
 @RequiredArgsConstructor
 public class JdbcBookRepository implements BookRepository {
@@ -59,11 +64,7 @@ public class JdbcBookRepository implements BookRepository {
         return Optional.ofNullable(getNullableResult(() -> namedJdbcTemplate.queryForObject(
                 """
                         SELECT
-                            b.id,
-                            b.title,
-                            b.author_id,
-                            a.firstName,
-                            a.lastName,
+                            b.id, b.title, b.author_id, a.firstName, a.lastName,
                             ARRAY_AGG(g2.id) AS genre_ids,
                             ARRAY_AGG(g2.genre_title) AS genre_titles
                         FROM
@@ -118,12 +119,19 @@ public class JdbcBookRepository implements BookRepository {
                 WHERE ID = :id""", parameterSource) == 0) {
             throw new EntityNotFoundException("No book found with id: " + book.getId());
         }
+        batchUpdateGenreRelations(book);
         return book;
     }
 
     @Override
     public void deleteBookById(long id) {
-
+        Book deleteBook = new Book();
+        deleteBook.setId(id);
+        removeRelations(deleteBook);
+        namedJdbcTemplate.update("""
+               DELETE FROM
+                   BOOKS
+               WHERE ID = :id""", Map.of("id", deleteBook.getId()));
     }
 
     private void batchInsertGenreRelations(Book book) {
@@ -134,6 +142,18 @@ public class JdbcBookRepository implements BookRepository {
                 book.getGenres().stream().map(genre ->
                         new BookToGenreRelation(book.getId(), genre.getId())
                 ).toList()));
+    }
+
+    private void batchUpdateGenreRelations(Book book) {
+        removeRelations(book);
+        batchInsertGenreRelations(book);
+    }
+
+    private void removeRelations(Book book) {
+        namedJdbcTemplate.update("""
+                DELETE FROM
+                    GENRES_RELATIONSHIPS
+                WHERE BOOK_ID = :id""", Map.of("id", book.getId()));
     }
 
     private <T> T getNullableResult(Supplier<T> supplier) {

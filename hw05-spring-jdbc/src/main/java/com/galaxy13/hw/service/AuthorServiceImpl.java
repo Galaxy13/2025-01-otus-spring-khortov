@@ -1,6 +1,6 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dao.AuthorRepository;
+import com.galaxy13.hw.repository.AuthorRepository;
 import com.galaxy13.hw.model.Author;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
