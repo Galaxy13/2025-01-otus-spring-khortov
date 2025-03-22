@@ -1,0 +1,6 @@
+${AnsiColor.RED} ______    ${AnsiColor.BRIGHT_CYAN} ______  ${AnsiColor.MAGENTA} __  __    ${AnsiColor.BRIGHT_YELLOW} ______       ${AnsiColor.BRIGHT_GREEN} ______     ______   ______     __     __   __     ______
+${AnsiColor.RED}/\  __ \   ${AnsiColor.BRIGHT_CYAN}/\__  _\ ${AnsiColor.MAGENTA}/\ \/\ \   ${AnsiColor.BRIGHT_YELLOW}/\  ___\      ${AnsiColor.BRIGHT_GREEN}/\  ___\   /\  == \ /\  == \   /\ \   /\ "-.\ \   /\  ___\
+${AnsiColor.RED}\ \ \/\ \  ${AnsiColor.BRIGHT_CYAN}\/_/\ \/ ${AnsiColor.MAGENTA}\ \ \_\ \  ${AnsiColor.BRIGHT_YELLOW}\ \___  \     ${AnsiColor.BRIGHT_GREEN}\ \___  \  \ \  _-/ \ \  __<   \ \ \  \ \ \-.  \  \ \ \__ \
+${AnsiColor.RED} \ \_____\ ${AnsiColor.BRIGHT_CYAN}   \ \_\ ${AnsiColor.MAGENTA} \ \_____\ ${AnsiColor.BRIGHT_YELLOW} \/\_____\    ${AnsiColor.BRIGHT_GREEN} \/\_____\  \ \_\    \ \_\ \_\  \ \_\  \ \_\\"\_\  \ \_____\
+${AnsiColor.RED}  \/_____/ ${AnsiColor.BRIGHT_CYAN}    \/_/ ${AnsiColor.MAGENTA}  \/_____/ ${AnsiColor.BRIGHT_YELLOW}  \/_____/    ${AnsiColor.BRIGHT_GREEN}  \/_____/   \/_/     \/_/ /_/   \/_/   \/_/ \/_/   \/_____/
+${AnsiColor.DEFAULT}
