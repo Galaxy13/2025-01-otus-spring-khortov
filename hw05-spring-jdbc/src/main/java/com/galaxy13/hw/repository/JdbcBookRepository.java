@@ -117,7 +117,7 @@ public class JdbcBookRepository implements BookRepository {
                 SET
                     TITLE = :title, AUTHOR_ID = :authorId
                 WHERE ID = :id""", parameterSource) == 0) {
-            throw new EntityNotFoundException("No book found with id: " + book.getId());
+            throw new EntityNotFoundException("No existing book found with id: " + book.getId());
         }
         batchUpdateGenreRelations(book);
         return book;
