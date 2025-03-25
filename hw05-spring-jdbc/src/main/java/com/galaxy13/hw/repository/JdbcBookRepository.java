@@ -5,8 +5,9 @@ import com.galaxy13.hw.model.Author;
 import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Genre;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -19,13 +20,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.function.Supplier;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-@SuppressWarnings({"java:S6203", "java:S1192"})
+@SuppressWarnings({"java:S6203", "java:S1192", "java:S2259"})
 @Repository
 @RequiredArgsConstructor
 public class JdbcBookRepository implements BookRepository {
@@ -33,56 +36,26 @@ public class JdbcBookRepository implements BookRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    private final GenreRepository genreRepository;
+
     @Override
     public List<Book> findAllBooks() {
-        return jdbcTemplate.query(
-                """     
-                        SELECT
-                            b.id,
-                            b.title,
-                            b.author_id,
-                            a.firstName,
-                            a.lastName,
-                            ARRAY_AGG(g2.id) AS genre_ids,
-                            ARRAY_AGG(g2.genre_title) AS genre_titles
-                        FROM
-                            books AS b
-                        JOIN
-                            genres_relationships AS gR ON b.id = gR.book_id
-                        JOIN
-                            genres AS g2 ON gR.genre_id = g2.id
-                        JOIN
-                            authors AS a ON b.author_id = a.id
-                        GROUP BY
-                            b.id
-                        ORDER BY
-                            b.id""", new BookRowMapper());
+        var booksWithAuthor = getAllBooksWithAuthors();
+        var genresMap = getAllGenres();
+        var bookGenreRelations = getAllBookGenreRelations();
+        return mergeBookAndGenreInfo(booksWithAuthor, genresMap, bookGenreRelations);
     }
 
     @Override
     public Optional<Book> findBookById(long id) {
-        return Optional.ofNullable(getNullableResult(() -> namedJdbcTemplate.queryForObject(
-                """
-                        SELECT
-                            b.id, b.title, b.author_id, a.firstName, a.lastName,
-                            ARRAY_AGG(g2.id) AS genre_ids,
-                            ARRAY_AGG(g2.genre_title) AS genre_titles
-                        FROM
-                            books AS b
-                                JOIN
-                            genres_relationships AS gR ON b.id = gR.book_id
-                                JOIN
-                            genres AS g2 ON gR.genre_id = g2.id
-                                JOIN
-                            authors AS a ON b.author_id = a.id
-                        WHERE
-                            b.id = :id
-                        GROUP BY
-                            b.id
-                        ORDER BY
-                            b.id
-                        """,
-                Map.of("id", id), new BookRowMapper())));
+        Book book = getBookById(id);
+        if (book != null) {
+            List<Genre> genres = getBookGenres(id);
+            for (Genre genre: genres) {
+                book.addGenre(genre);
+            }
+        }
+        return Optional.ofNullable(book);
     }
 
     @Override
@@ -156,26 +129,91 @@ public class JdbcBookRepository implements BookRepository {
                 WHERE BOOK_ID = :id""", Map.of("id", book.getId()));
     }
 
-    private <T> T getNullableResult(Supplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
-        }
-    }
-
     private record BookToGenreRelation(long bookId, long genreId) {
     }
 
-    private static class BookRowMapper implements RowMapper<Book> {
+    private Map<Long, Book> getAllBooksWithAuthors() {
+        return jdbcTemplate.query("""
+                SELECT
+                    B.ID, TITLE, AUTHOR_ID, FIRSTNAME, LASTNAME
+                FROM
+                    BOOKS AS B
+                INNER JOIN
+                    AUTHORS A ON A.ID = B.AUTHOR_ID""", new BookResultSetExtractor());
+    }
+
+    private Map<Long, Genre> getAllGenres() {
+        return genreRepository.findAllGenres().stream().collect(Collectors.toMap(Genre::getId, Function.identity()));
+    }
+
+    private List<BookToGenreRelation> getAllBookGenreRelations() {
+        return jdbcTemplate.query("""
+                SELECT
+                    BOOK_ID, GENRE_ID
+                FROM
+                    GENRES_RELATIONSHIPS""", new BookGenreRelationMapper());
+    }
+
+    private List<Book> mergeBookAndGenreInfo(Map<Long, Book> books,
+                                             Map<Long, Genre> genres,
+                                             List<BookToGenreRelation> relations) {
+        for (BookToGenreRelation relation: relations) {
+            Book book = books.get(relation.bookId());
+            Genre genre = genres.get(relation.genreId());
+            book.addGenre(genre);
+        }
+        return books.values().stream().toList();
+    }
+
+    private Book getBookById(long id) {
+        Map<Long, Book> book =  namedJdbcTemplate.query("""
+                SELECT
+                    B.ID, TITLE, AUTHOR_ID, FIRSTNAME, LASTNAME
+                FROM
+                    BOOKS AS B
+                INNER JOIN
+                    AUTHORS A on A.ID = B.AUTHOR_ID
+                WHERE
+                    B.ID = :id""",
+                Map.of("id", id), new BookResultSetExtractor());
+        return book.get(id);
+    }
+
+    private List<Genre> getBookGenres(long id) {
+        List<BookToGenreRelation> relations = namedJdbcTemplate.query("""
+                SELECT
+                    BOOK_ID, GENRE_ID
+                FROM
+                    GENRES_RELATIONSHIPS
+                WHERE
+                    BOOK_ID = :id""",
+                Map.of("id", id), new BookGenreRelationMapper());
+        return genreRepository.findAllByIds(relations.stream()
+                .map(BookToGenreRelation::genreId)
+                .collect(Collectors.toSet()));
+    }
+
+    private static class BookGenreRelationMapper implements RowMapper<BookToGenreRelation> {
         @Override
-        public Book mapRow(ResultSet rs, int rowNum) throws SQLException {
-            long id = rs.getLong("id");
-            String title = rs.getString("title");
-            Author author = getAuthor(rs);
-            Book book = new Book(id, title, author, new ArrayList<>());
-            addGenresToBook(rs, book);
-            return book;
+        public BookToGenreRelation mapRow(ResultSet rs, int rowNum) throws SQLException {
+            long bookId = rs.getLong("book_id");
+            long genreId = rs.getLong("genre_id");
+            return new BookToGenreRelation(bookId, genreId);
+        }
+    }
+
+    private static class BookResultSetExtractor implements ResultSetExtractor<Map<Long, Book>> {
+
+        @Override
+        public Map<Long, Book> extractData(ResultSet rs) throws SQLException, DataAccessException {
+            Map<Long, Book> books = new HashMap<>();
+            while (rs.next()) {
+                long id = rs.getLong("id");
+                String title = rs.getString("title");
+                Author author = getAuthor(rs);
+                books.put(id, new Book(id, title, author, new ArrayList<>()));
+            }
+            return books;
         }
 
         private Author getAuthor(ResultSet rs) throws SQLException {
@@ -183,16 +221,6 @@ public class JdbcBookRepository implements BookRepository {
             String firstName = rs.getString("firstName");
             String lastName = rs.getString("lastName");
             return new Author(authorId, firstName, lastName);
-        }
-
-        private void addGenresToBook(ResultSet rs, Book book) throws SQLException {
-            Object[] genreIds = (Object[]) rs.getArray("genre_ids").getArray();
-            Object[] genreTitles = (Object[]) rs.getArray("genre_titles").getArray();
-            for (int i = 0; i < genreIds.length; i++) {
-                if (genreIds[i] instanceof Long genreId && genreTitles[i] instanceof String genreTitle) {
-                    book.addGenre(new Genre(genreId, genreTitle));
-                }
-            }
         }
     }
 }

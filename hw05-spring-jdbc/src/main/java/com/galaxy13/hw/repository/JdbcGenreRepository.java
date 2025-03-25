@@ -3,7 +3,6 @@ package com.galaxy13.hw.repository;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Genre;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -19,7 +18,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 @SuppressWarnings({"java:S6203", "java:S1192"})
 @Repository
@@ -32,22 +30,42 @@ public class JdbcGenreRepository implements GenreRepository {
     @Override
     public List<Genre> findAllGenres() {
         return jdbcTemplate.query("""
-                SELECT ID, GENRE_TITLE FROM GENRES
-                    ORDER BY ID""", new GenreRowMapper());
+                SELECT
+                    ID, GENRE_TITLE
+                FROM
+                    GENRES
+                ORDER BY
+                    ID""", new GenreRowMapper());
     }
 
     @Override
     public Optional<Genre> findGenreById(long id) {
-        return Optional.ofNullable(getNullableResult(() -> namedParameterJdbcTemplate.queryForObject("""
-                SELECT ID, GENRE_TITLE FROM GENRES WHERE ID = :id
-                    ORDER BY ID""", Map.of("id", id), new GenreRowMapper())));
+        List<Genre> genre = namedParameterJdbcTemplate.query("""
+                SELECT
+                    ID, GENRE_TITLE
+                FROM
+                    GENRES
+                WHERE
+                    ID = :id
+                ORDER BY
+                    ID""", Map.of("id", id), new GenreRowMapper());
+        if (genre.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(genre.getFirst());
     }
 
     @Override
     public List<Genre> findAllByIds(Set<Long> ids) {
         return namedParameterJdbcTemplate.query("""
-            SELECT ID, GENRE_TITLE FROM GENRES AS G WHERE G.ID IN (:ids)
-                ORDER BY G.ID""", Map.of("ids", ids), new GenreRowMapper());
+            SELECT
+                ID, GENRE_TITLE
+            FROM
+                GENRES AS G
+            WHERE
+                G.ID IN (:ids)
+            ORDER BY
+                G.ID""", Map.of("ids", ids), new GenreRowMapper());
     }
 
     @Override
@@ -80,14 +98,6 @@ public class JdbcGenreRepository implements GenreRepository {
             throw new EntityNotFoundException("Genre with id " + genre.getId() + " not found");
         }
         return genre;
-    }
-
-    private <T> T getNullableResult(Supplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
-        }
     }
 
     private static class GenreRowMapper implements RowMapper<Genre> {

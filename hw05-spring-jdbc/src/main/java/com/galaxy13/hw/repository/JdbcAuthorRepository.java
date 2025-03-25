@@ -3,7 +3,6 @@ package com.galaxy13.hw.repository;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Author;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 @SuppressWarnings({"java:S6203", "java:S1192"})
 @Repository
@@ -41,19 +39,23 @@ public class JdbcAuthorRepository implements AuthorRepository {
 
     @Override
     public Optional<Author> findById(long id) {
-        return Optional.ofNullable(getNullableResult(() -> namedParameterJdbcTemplate.queryForObject("""
+        List<Author> authors = namedParameterJdbcTemplate.query("""
                 SELECT
                     ID,
                     FIRSTNAME,
                     LASTNAME
                     from AUTHORS
                     WHERE ID = :id
-                    ORDER BY ID""", Map.of("id", id), new AuthorRowMapper())));
+                    ORDER BY ID""", Map.of("id", id), new AuthorRowMapper());
+        if (authors.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(authors.getFirst());
     }
 
     @Override
     public Optional<Author> findByFullName(String firstName, String lastName) {
-        return Optional.ofNullable(getNullableResult(() -> namedParameterJdbcTemplate.queryForObject("""
+        return Optional.ofNullable(namedParameterJdbcTemplate.query("""
                 SELECT
                     ID,
                     FIRSTNAME,
@@ -61,7 +63,7 @@ public class JdbcAuthorRepository implements AuthorRepository {
                     from AUTHORS
                     WHERE (FIRSTNAME = :firstName, LASTNAME = :lastName)
                     ORDER BY ID""",
-                Map.of("firstName", firstName, "lastName", lastName), new AuthorRowMapper())));
+                Map.of("firstName", firstName, "lastName", lastName), new AuthorRowMapper()).getFirst());
     }
 
     @Override
@@ -102,14 +104,6 @@ public class JdbcAuthorRepository implements AuthorRepository {
             throw new EntityNotFoundException("Author with id " + author.getId() + " not found");
         }
         return author;
-    }
-
-    private <T> T getNullableResult(Supplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
-        }
     }
 
     private static class AuthorRowMapper implements RowMapper<Author> {
