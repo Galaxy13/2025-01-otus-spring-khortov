@@ -49,10 +49,7 @@ public class JdbcGenreRepository implements GenreRepository {
                     ID = :id
                 ORDER BY
                     ID""", Map.of("id", id), new GenreRowMapper());
-        if (genre.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(genre.getFirst());
+        return genre.stream().findFirst();
     }
 
     @Override

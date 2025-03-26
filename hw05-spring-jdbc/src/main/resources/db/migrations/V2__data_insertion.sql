@@ -13,7 +13,7 @@ values ('Fallout', 2),
        ('War and Peace', 1);
 
 insert into genres_relationships (BOOK_ID, GENRE_ID)
-VALUES (1, 3);
+VALUES (1, 3), (1, 2);
 
 insert into genres_relationships (BOOK_ID, GENRE_ID)
 values (2, 1);

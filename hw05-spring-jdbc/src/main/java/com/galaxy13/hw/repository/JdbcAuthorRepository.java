@@ -47,10 +47,7 @@ public class JdbcAuthorRepository implements AuthorRepository {
                     from AUTHORS
                     WHERE ID = :id
                     ORDER BY ID""", Map.of("id", id), new AuthorRowMapper());
-        if (authors.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(authors.getFirst());
+        return authors.stream().findFirst();
     }
 
     @Override
