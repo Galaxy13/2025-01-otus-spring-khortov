@@ -1,14 +1,15 @@
 package com.galaxy13.hw.service;
 
+import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.model.Genre;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface GenreService {
-    List<Genre> findAllGenres();
+    List<GenreDto> findAllGenres();
 
-    Optional<Genre> findGenreById(long id);
+    Optional<GenreDto> findGenreById(long id);
 
-    Genre saveGenre(long id, String genreName);
+    GenreDto saveGenre(long id, String genreName);
 }

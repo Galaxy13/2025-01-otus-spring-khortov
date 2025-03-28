@@ -1,8 +1,8 @@
 package com.galaxy13.hw.converter;
 
-import com.galaxy13.hw.model.Author;
-import com.galaxy13.hw.model.Book;
-import com.galaxy13.hw.model.Genre;
+import com.galaxy13.hw.dto.AuthorDto;
+import com.galaxy13.hw.dto.BookDto;
+import com.galaxy13.hw.dto.GenreDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -10,13 +10,13 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
-public class BookConverter implements Converter<Book> {
-    private final Converter<Author> authorConverter;
+public class BookDtoConverter implements Converter<BookDto> {
+    private final Converter<AuthorDto> authorConverter;
 
-    private final Converter<Genre> genreConverter;
+    private final Converter<GenreDto> genreConverter;
 
     @Override
-    public String convertToString(Book book) {
+    public String convertToString(BookDto book) {
         var genresString = book.getGenres().stream()
                 .map(genreConverter::convertToString)
                 .map("{%s}"::formatted)

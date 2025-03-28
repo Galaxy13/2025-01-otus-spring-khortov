@@ -1,12 +1,12 @@
 package com.galaxy13.hw.converter;
 
-import com.galaxy13.hw.model.Author;
+import com.galaxy13.hw.dto.AuthorDto;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AuthorConverter implements Converter<Author> {
+public class AuthorDtoConverter implements Converter<AuthorDto> {
     @Override
-    public String convertToString(Author author) {
+    public String convertToString(AuthorDto author) {
         return "Id: %d, FullName: %s %s".formatted(author.getId(), author.getFirstName(), author.getLastName());
     }
 }

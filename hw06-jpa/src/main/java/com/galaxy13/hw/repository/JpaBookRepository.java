@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.springframework.data.jpa.repository.EntityGraph.EntityGraphType.FETCH;
@@ -17,7 +18,6 @@ import static org.springframework.data.jpa.repository.EntityGraph.EntityGraphTyp
 @Repository
 public class JpaBookRepository implements BookRepository {
     private final EntityManager em;
-
 
     @Override
     public List<Book> findAllBooks() {
@@ -29,7 +29,9 @@ public class JpaBookRepository implements BookRepository {
 
     @Override
     public Optional<Book> findBookById(long id) {
-        return Optional.ofNullable(em.find(Book.class, id));
+        EntityGraph<?> entityGraph = em.getEntityGraph("author-entity-graph");
+        Map<String, Object> properties = Map.of(FETCH.getKey(), entityGraph);
+        return Optional.ofNullable(em.find(Book.class, id, properties));
     }
 
     @Override

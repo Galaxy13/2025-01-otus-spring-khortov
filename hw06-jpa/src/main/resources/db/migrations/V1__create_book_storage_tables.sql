@@ -31,7 +31,7 @@ create table comments
 (
     id           bigserial primary key,
     comment_text varchar(255) not null,
-    book_id      bigint references books (id)
+    book_id      bigint references books (id) on delete cascade
 );
 
 alter table authors

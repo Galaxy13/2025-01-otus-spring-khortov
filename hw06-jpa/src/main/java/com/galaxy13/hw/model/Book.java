@@ -2,6 +2,7 @@ package com.galaxy13.hw.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -35,12 +36,16 @@ public class Book {
     private Author author;
 
     @Fetch(FetchMode.SUBSELECT)
-    @ManyToMany(fetch = FetchType.LAZY, targetEntity = Genre.class, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.LAZY,
+            targetEntity = Genre.class)
     @JoinTable(name = "genres_relationships", joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private List<Genre> genres;
 
-    @OneToMany(fetch = FetchType.LAZY, targetEntity = Comment.class, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @Fetch(FetchMode.SUBSELECT)
+    @OneToMany(fetch = FetchType.LAZY,
+            targetEntity = Comment.class,
+            cascade = {CascadeType.REMOVE})
     @JoinColumn(name = "book_id")
     private List<Comment> comments;
 }

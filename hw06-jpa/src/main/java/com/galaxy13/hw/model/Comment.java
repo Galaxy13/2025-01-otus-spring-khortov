@@ -19,4 +19,7 @@ public class Comment {
 
     @Column(name = "comment_text", nullable = false)
     private String text;
+
+    @Column(name = "book_id", nullable = false)
+    private long bookId;
 }
