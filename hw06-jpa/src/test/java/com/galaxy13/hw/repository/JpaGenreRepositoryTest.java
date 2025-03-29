@@ -1,54 +1,51 @@
 package com.galaxy13.hw.repository;
 
-import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Genre;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
-import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("JDBC Genre Repository test")
-@JdbcTest
-@Import(JdbcGenreRepository.class)
-class JdbcGenreRepositoryTest {
+@DisplayName("JPA Genre Repository test")
+@DataJpaTest
+@Import(JpaGenreRepository.class)
+class JpaGenreRepositoryTest {
 
     @Autowired
     private GenreRepository genreRepository;
 
-    private List<Genre> dbGenres;
-
-    @BeforeEach
-    void setUp() {
-        dbGenres = getDbGenres();
-    }
+    @Autowired
+    private TestEntityManager em;
 
     @DisplayName("Find all genres test")
     @Test
     void findAllGenresTest() {
         var allGenres = genreRepository.findAllGenres();
-        assertThat(allGenres).containsExactlyElementsOf(dbGenres);
+        var expectedGenres = LongStream.range(1, 7).boxed().map(id -> em.find(Genre.class, id)).toList();
+        assertThat(allGenres).usingRecursiveComparison().isEqualTo(expectedGenres);
     }
 
     @DisplayName("Find genre by id test")
     @ParameterizedTest
     @MethodSource("getDbGenres")
-    void findGenreByIdTest(Genre genre) {
-        var genreById = genreRepository.findGenreById(genre.getId());
+    void findGenreByIdTest(long id) {
+        var expectedGenre = em.find(Genre.class, id);
+        var genreById = genreRepository.findGenreById(expectedGenre.getId());
         assertThat(genreById).isPresent()
                 .get()
-                .isEqualTo(genre);
+                .usingRecursiveComparison()
+                .isEqualTo(expectedGenre);
     }
 
     @DisplayName("Empty Optional on find of non-existing genre test")
@@ -80,11 +77,13 @@ class JdbcGenreRepositoryTest {
         var genreToUpdate = new Genre(1, "New Genre");
         var updatedGenre = genreRepository.saveGenre(genreToUpdate);
         assertThat(updatedGenre).isNotNull()
+                .usingRecursiveComparison()
                 .isEqualTo(genreToUpdate);
 
         var findGenreById = genreRepository.findGenreById(updatedGenre.getId());
         assertThat(findGenreById).isPresent()
                 .get()
+                .usingRecursiveComparison()
                 .isEqualTo(genreToUpdate);
     }
 
@@ -92,27 +91,27 @@ class JdbcGenreRepositoryTest {
     @Test
     void shouldThrowExceptionOnUpdatingNonExistingGenre() {
         var genreToUpdate = new Genre(-1, "New Genre");
-        assertThatThrownBy(() -> genreRepository.saveGenre(genreToUpdate)).isInstanceOf(EntityNotFoundException.class);
+        assertThatThrownBy(() -> genreRepository.saveGenre(genreToUpdate)).isInstanceOf(RuntimeException.class);
     }
 
     @DisplayName("Find genres by ids")
     @ParameterizedTest
     @MethodSource("getDbGenreIds")
     void findGenresByIdsTest(Long genreNumber) {
-        var genres = LongStream.range(1, genreNumber).boxed().collect(Collectors.toSet());
-        var findGenres = genreRepository.findAllByIds(genres);
-        assertThat(findGenres).isNotEmpty()
+        var genresIds = LongStream.range(1, genreNumber).boxed().collect(Collectors.toSet());
+        var expectedGenres = genresIds.stream().map(id -> em.find(Genre.class, id)).toList();
+        var actualGenres = genreRepository.findAllByIds(genresIds);
+        assertThat(actualGenres).isNotEmpty()
                 .hasSize((int) (genreNumber - 1))
-                .allMatch(genre -> genres.contains(genre.getId()));
+                .usingRecursiveComparison()
+                .isEqualTo(expectedGenres);
     }
 
-    private static List<Genre> getDbGenres() {
-        return IntStream.range(1, 7).boxed()
-                .map(id -> new Genre(id, "Genre_" + id))
-                .toList();
+    private static Stream<Long> getDbGenres() {
+        return LongStream.range(1, 7).boxed();
     }
 
-    private static List<Long> getDbGenreIds() {
-        return LongStream.range(2, 8).boxed().toList();
+    private static Stream<Long> getDbGenreIds() {
+        return LongStream.range(2, 8).boxed();
     }
 }

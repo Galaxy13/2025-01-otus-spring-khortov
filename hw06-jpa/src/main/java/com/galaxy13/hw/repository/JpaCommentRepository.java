@@ -16,7 +16,7 @@ public class JpaCommentRepository implements CommentRepository {
 
     @Override
     public List<Comment> findCommentsByBookId(long id) {
-        TypedQuery<Comment> query = em.createQuery("select c from Comment c where c.bookId = :id",
+        TypedQuery<Comment> query = em.createQuery("select c from Comment c where c.book.id = :id",
                 Comment.class);
         query.setParameter("id", id);
         return query.getResultList();
@@ -29,7 +29,7 @@ public class JpaCommentRepository implements CommentRepository {
 
     @Override
     public Comment saveComment(Comment comment) {
-        if (comment.getId() == 0){
+        if (comment.getId() == 0) {
             em.persist(comment);
             return comment;
         }

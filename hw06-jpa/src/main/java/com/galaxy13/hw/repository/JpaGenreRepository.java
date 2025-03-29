@@ -37,7 +37,7 @@ public class JpaGenreRepository implements GenreRepository {
 
     @Override
     public Genre saveGenre(Genre genre) {
-        if (genre.getId() == 0){
+        if (genre.getId() == 0) {
             em.persist(genre);
             return genre;
         }

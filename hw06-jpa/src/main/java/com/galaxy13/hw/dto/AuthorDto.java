@@ -14,7 +14,7 @@ public class AuthorDto {
 
     private final String lastName;
 
-    public AuthorDto(Author author){
+    public AuthorDto(Author author) {
         this.id = author.getId();
         this.firstName = author.getFirstName();
         this.lastName = author.getLastName();

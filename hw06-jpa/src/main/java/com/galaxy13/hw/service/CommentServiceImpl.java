@@ -1,7 +1,10 @@
 package com.galaxy13.hw.service;
 
 import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.exception.EntityNotFoundException;
+import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Comment;
+import com.galaxy13.hw.repository.BookRepository;
 import com.galaxy13.hw.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
+
+    private final BookRepository bookRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -30,10 +35,12 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     @Override
     public CommentDto saveComment(long id, String text, long bookId) {
-        if (text == null || text.isEmpty() || bookId == 0){
+        if (text == null || text.isEmpty() || bookId == 0) {
             throw new IllegalArgumentException("No comment text and/or wrong book id");
         }
-        Comment comment = commentRepository.saveComment(new Comment(id, text, bookId));
+        Book book = bookRepository.findBookById(bookId).orElseThrow(
+                () -> new EntityNotFoundException("Book not found"));
+        Comment comment = commentRepository.saveComment(new Comment(id, text, book));
         return new CommentDto(comment);
     }
 }

@@ -15,16 +15,10 @@ public class BookDto {
 
     private final List<GenreDto> genres;
 
-    private final List<CommentDto> comments;
-
-    public BookDto (Book book){
+    public BookDto (Book book) {
         this.id = book.getId();
         this.title = book.getTitle();
         this.author = new AuthorDto(book.getAuthor());
         this.genres = book.getGenres().stream().map(GenreDto::new).toList();
-        this.comments = book.getComments() != null ? book.getComments()
-                .stream()
-                .map(CommentDto::new)
-                .toList() : List.of();
     }
 }

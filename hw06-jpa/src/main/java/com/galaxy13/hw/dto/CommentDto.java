@@ -13,9 +13,9 @@ public class CommentDto {
 
     private final long bookId;
 
-    public CommentDto(Comment comment){
+    public CommentDto(Comment comment) {
         this.id = comment.getId();
         this.text = comment.getText();
-        this.bookId = comment.getBookId();
+        this.bookId = comment.getBook().getId();
     }
 }

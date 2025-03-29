@@ -27,6 +27,13 @@ create table genres_relationships
     primary key (book_id, genre_id)
 );
 
+create table comments
+(
+    id           bigserial primary key,
+    comment_text varchar(255) not null,
+    book_id      bigint references books (id) on delete cascade
+);
+
 alter table authors
     add constraint authorCreds unique (firstname, lastName);
 

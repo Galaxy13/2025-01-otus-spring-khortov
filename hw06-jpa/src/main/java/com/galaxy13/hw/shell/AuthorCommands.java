@@ -2,7 +2,6 @@ package com.galaxy13.hw.shell;
 
 import com.galaxy13.hw.converter.AuthorDtoConverter;
 import com.galaxy13.hw.dto.AuthorDto;
-import com.galaxy13.hw.model.Author;
 import com.galaxy13.hw.service.AuthorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.command.annotation.Command;

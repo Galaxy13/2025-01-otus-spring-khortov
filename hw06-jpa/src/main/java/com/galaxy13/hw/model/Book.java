@@ -1,8 +1,22 @@
 package com.galaxy13.hw.model;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.BatchSize;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinTable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -17,13 +31,6 @@ import java.util.List;
 @Setter
 public class Book {
 
-    public Book (long id, String title, Author author, List<Genre> genres) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.genres = genres;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -31,7 +38,7 @@ public class Book {
     @Column(name = "title", unique = true, nullable = false)
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, targetEntity = Author.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = Author.class)
     @JoinColumn(name = "author_id")
     private Author author;
 
@@ -41,11 +48,4 @@ public class Book {
     @JoinTable(name = "genres_relationships", joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private List<Genre> genres;
-
-    @Fetch(FetchMode.SUBSELECT)
-    @OneToMany(fetch = FetchType.LAZY,
-            targetEntity = Comment.class,
-            cascade = {CascadeType.REMOVE})
-    @JoinColumn(name = "book_id")
-    private List<Comment> comments;
 }

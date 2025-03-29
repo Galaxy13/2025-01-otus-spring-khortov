@@ -12,3 +12,8 @@ insert into GENRES_RELATIONSHIPS(book_id, genre_id)
 values (1, 1),   (1, 2),
        (2, 3),   (2, 4),
        (3, 5),   (3, 6);
+
+insert into COMMENTS(COMMENT_TEXT, BOOK_ID)
+values ( 'C_1', 1 ), ('C_2', 1),
+       ('C_3', 2), ('C_4', 2),
+       ('C_5', 3), ('C_6', 3)

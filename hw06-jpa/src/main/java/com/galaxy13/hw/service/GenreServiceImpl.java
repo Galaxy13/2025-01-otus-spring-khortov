@@ -34,7 +34,6 @@ public class GenreServiceImpl implements GenreService {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Genre name cannot be null or empty");
         }
-
         Genre genre = genreRepository.saveGenre(new Genre(id, name));
         return new GenreDto(genre);
     }
