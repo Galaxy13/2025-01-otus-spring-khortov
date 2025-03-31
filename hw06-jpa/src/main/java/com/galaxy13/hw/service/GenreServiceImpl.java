@@ -1,6 +1,7 @@
 package com.galaxy13.hw.service;
 
 
+import com.galaxy13.hw.converter.GenreDtoConverter;
 import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.repository.GenreRepository;
 import com.galaxy13.hw.model.Genre;
@@ -16,16 +17,18 @@ import java.util.Optional;
 public class GenreServiceImpl implements GenreService {
     private final GenreRepository genreRepository;
 
+    private final GenreDtoConverter genreDtoConverter;
+
     @Transactional(readOnly = true)
     @Override
     public List<GenreDto> findAllGenres() {
-        return genreRepository.findAllGenres().stream().map(GenreDto::new).toList();
+        return genreRepository.findAllGenres().stream().map(genreDtoConverter::convert).toList();
     }
 
     @Transactional(readOnly = true)
     @Override
     public Optional<GenreDto> findGenreById(long id) {
-        return genreRepository.findGenreById(id).map(GenreDto::new);
+        return genreRepository.findGenreById(id).map(genreDtoConverter::convert);
     }
 
     @Transactional
@@ -35,6 +38,6 @@ public class GenreServiceImpl implements GenreService {
             throw new IllegalArgumentException("Genre name cannot be null or empty");
         }
         Genre genre = genreRepository.saveGenre(new Genre(id, name));
-        return new GenreDto(genre);
+        return genreDtoConverter.convert(genre);
     }
 }

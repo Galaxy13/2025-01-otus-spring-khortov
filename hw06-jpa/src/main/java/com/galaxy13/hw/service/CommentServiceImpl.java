@@ -1,5 +1,6 @@
 package com.galaxy13.hw.service;
 
+import com.galaxy13.hw.converter.CommentDtoConverter;
 import com.galaxy13.hw.dto.CommentDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Book;
@@ -20,16 +21,18 @@ public class CommentServiceImpl implements CommentService {
 
     private final BookRepository bookRepository;
 
+    private final CommentDtoConverter commentDtoConverter;
+
     @Transactional(readOnly = true)
     @Override
     public List<CommentDto> findCommentByBookId(long id) {
-        return commentRepository.findCommentsByBookId(id).stream().map(CommentDto::new).toList();
+        return commentRepository.findCommentsByBookId(id).stream().map(commentDtoConverter::convert).toList();
     }
 
     @Transactional(readOnly = true)
     @Override
     public Optional<CommentDto> findCommentById(long id) {
-        return commentRepository.findCommentById(id).map(CommentDto::new);
+        return commentRepository.findCommentById(id).map(commentDtoConverter::convert);
     }
 
     @Transactional
@@ -41,6 +44,6 @@ public class CommentServiceImpl implements CommentService {
         Book book = bookRepository.findBookById(bookId).orElseThrow(
                 () -> new EntityNotFoundException("Book not found"));
         Comment comment = commentRepository.saveComment(new Comment(id, text, book));
-        return new CommentDto(comment);
+        return commentDtoConverter.convert(comment);
     }
 }

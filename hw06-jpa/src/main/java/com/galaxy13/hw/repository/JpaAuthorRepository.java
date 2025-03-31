@@ -29,6 +29,8 @@ public class JpaAuthorRepository implements AuthorRepository {
     public Optional<Author> findByFullName(String firstName, String lastName) {
         TypedQuery<Author> query = em.createQuery("select a from Author a " +
                 "where a.firstName = :firstName and a.lastName = :lastName", Author.class);
+        query.setParameter("firstName", firstName);
+        query.setParameter("lastName", lastName);
         return query.getResultList().stream().findFirst();
     }
 

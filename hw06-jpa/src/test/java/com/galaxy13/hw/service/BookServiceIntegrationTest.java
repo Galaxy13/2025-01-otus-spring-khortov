@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("Integration Book service test")
 @DataJpaTest(includeFilters = @ComponentScan.Filter(Repository.class))
 @Import({BookServiceImpl.class})
+@ComponentScan("com.galaxy13.hw.converter")
 class BookServiceIntegrationTest {
     @Autowired
     private BookService bookService;

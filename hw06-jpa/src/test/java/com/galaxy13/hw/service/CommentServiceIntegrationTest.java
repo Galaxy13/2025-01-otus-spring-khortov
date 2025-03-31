@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
 import java.util.List;
@@ -27,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("Integration Book service test")
 @DataJpaTest
 @Import({CommentServiceImpl.class, JpaCommentRepository.class, JpaBookRepository.class})
+@ComponentScan("com.galaxy13.hw.converter")
 class CommentServiceIntegrationTest {
     @Autowired
     private CommentService commentService;
@@ -148,6 +150,6 @@ class CommentServiceIntegrationTest {
     }
 
     private CommentDto toDto(Comment comment) {
-        return new CommentDto(comment);
+        return new CommentDto(comment.getId(), comment.getText(), comment.getBook().getId());
     }
 }

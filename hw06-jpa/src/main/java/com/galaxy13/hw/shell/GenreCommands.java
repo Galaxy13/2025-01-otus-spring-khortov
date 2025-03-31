@@ -1,6 +1,6 @@
 package com.galaxy13.hw.shell;
 
-import com.galaxy13.hw.converter.GenreDtoConverter;
+import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.service.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.command.annotation.Command;
@@ -12,26 +12,24 @@ import java.util.stream.Collectors;
 public class GenreCommands {
     private final GenreService genreService;
 
-    private final GenreDtoConverter genreDtoConverter;
-
     @Command(command = "find all", alias = "ag", description = "Find all genres")
     public String findAllGenres() {
         return genreService.findAllGenres()
                 .stream()
-                .map(genreDtoConverter::convertToString)
+                .map(GenreDto::toString)
                 .collect(Collectors.joining("," + System.lineSeparator()));
     }
 
     @Command(command = "find", alias = "gbid", description = "Find genre by id; params: {id: long}")
     public String findGenreById(long id) {
         return genreService.findGenreById(id)
-                .map(genreDtoConverter::convertToString)
+                .map(GenreDto::toString)
                 .orElse("Genre with id " + id + " not found");
     }
 
     @Command(command = "save", alias = "gins", description = "Insert new genre; params: {genreName: String}")
     public String insertGenre(String genreName) {
         var savedGenre = genreService.saveGenre(0, genreName);
-        return genreDtoConverter.convertToString(savedGenre);
+        return savedGenre.toString();
     }
 }

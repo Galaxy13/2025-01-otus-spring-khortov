@@ -1,5 +1,6 @@
 package com.galaxy13.hw.service;
 
+import com.galaxy13.hw.converter.BookDtoConverter;
 import com.galaxy13.hw.dto.BookDto;
 import com.galaxy13.hw.repository.AuthorRepository;
 import com.galaxy13.hw.repository.BookRepository;
@@ -25,29 +26,31 @@ public class BookServiceImpl implements BookService {
 
     private final GenreRepository genreRepository;
 
+    private final BookDtoConverter bookDtoConverter;
+
     @Transactional(readOnly = true)
     @Override
     public Optional<BookDto> findById(long id) {
         Optional<Book> book = bookRepository.findBookById(id);
-        return book.map(BookDto::new);
+        return book.map(bookDtoConverter::convert);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<BookDto> findAll() {
-        return bookRepository.findAllBooks().stream().map(BookDto::new).toList();
+        return bookRepository.findAllBooks().stream().map(bookDtoConverter::convert).toList();
     }
 
     @Transactional
     @Override
     public BookDto insert(String title, long authorId, Set<Long> genreIds) {
-        return new BookDto(save(0, title, authorId, genreIds));
+        return bookDtoConverter.convert(save(0, title, authorId, genreIds));
     }
 
     @Transactional
     @Override
     public BookDto update(long id, String title, long authorId, Set<Long> genreIds) {
-        return new BookDto(save(id, title, authorId, genreIds));
+        return bookDtoConverter.convert(save(id, title, authorId, genreIds));
     }
 
     @Transactional
