@@ -65,9 +65,8 @@ class JpaGenreRepositoryTest {
                 .matches(genre -> genre.getId() > 0)
                 .isEqualTo(genreToSave);
 
-        var findGenreById = genreRepository.findGenreById(savedGenre.getId());
-        assertThat(findGenreById).isPresent()
-                .get()
+        var findGenreById = em.find(Genre.class, savedGenre.getId());
+        assertThat(findGenreById).isNotNull()
                 .isEqualTo(savedGenre);
     }
 
@@ -80,9 +79,8 @@ class JpaGenreRepositoryTest {
                 .usingRecursiveComparison()
                 .isEqualTo(genreToUpdate);
 
-        var findGenreById = genreRepository.findGenreById(updatedGenre.getId());
-        assertThat(findGenreById).isPresent()
-                .get()
+        var findGenreById = em.find(Genre.class, updatedGenre.getId());
+        assertThat(findGenreById).isNotNull()
                 .usingRecursiveComparison()
                 .isEqualTo(genreToUpdate);
     }

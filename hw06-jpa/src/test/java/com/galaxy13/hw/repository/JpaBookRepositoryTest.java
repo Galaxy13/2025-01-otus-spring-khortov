@@ -38,7 +38,6 @@ class JpaBookRepositoryTest {
         var actualBook = repositoryJpa.findBookById(expectedBook.getId());
         assertThat(actualBook).isPresent()
                 .get()
-                .usingRecursiveComparison()
                 .isEqualTo(expectedBook);
     }
 
@@ -61,12 +60,9 @@ class JpaBookRepositoryTest {
         var returnedBook = repositoryJpa.saveBook(expectedBook);
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() > 0)
-                .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
+                .isEqualTo(expectedBook);
 
-        assertThat(repositoryJpa.findBookById(returnedBook.getId()))
-                .isPresent()
-                .get()
-                .usingRecursiveComparison()
+        assertThat(em.find(Book.class, returnedBook.getId())).isNotNull()
                 .isEqualTo(returnedBook);
     }
 
@@ -75,32 +71,26 @@ class JpaBookRepositoryTest {
     void shouldSaveUpdatedBook() {
         Author author = em.find(Author.class, 3);
         List<Genre> genres = List.of(em.find(Genre.class, 5), em.find(Genre.class, 6));
-        var expectedBook = new Book(1L, "BookTitle_10500", author,
+        var updateBook = new Book(1L, "BookTitle_10500", author,
                genres);
 
-        assertThat(repositoryJpa.findBookById(expectedBook.getId()))
-                .isPresent()
-                .get()
-                .isNotEqualTo(expectedBook);
+        assertThat(em.find(Book.class, updateBook.getId())).isNotNull()
+                .isNotEqualTo(updateBook);
 
-        var returnedBook = repositoryJpa.saveBook(expectedBook);
-        assertThat(returnedBook).isNotNull()
-                .matches(book -> book.getId() > 0)
-                .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
+        var actualBook = repositoryJpa.saveBook(updateBook);
+        assertThat(actualBook).isNotNull()
+                .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(updateBook);
 
-        assertThat(repositoryJpa.findBookById(returnedBook.getId()))
-                .isPresent()
-                .get()
-                .usingRecursiveComparison()
-                .isEqualTo(returnedBook);
+        assertThat(em.find(Book.class, actualBook.getId())).isNotNull()
+                .isEqualTo(actualBook);
     }
 
     @DisplayName("Should delete book by id")
     @Test
     void shouldDeleteBook() {
-        assertThat(repositoryJpa.findBookById(3L)).isPresent();
+        assertThat(em.find(Book.class, 3)).isNotNull();
         repositoryJpa.deleteBookById(3L);
-        assertThat(repositoryJpa.findBookById(3L)).isEmpty();
+        assertThat(em.find(Book.class, 3)).isNull();
     }
 
     @DisplayName("Should return empty Optional on find non-existing book")

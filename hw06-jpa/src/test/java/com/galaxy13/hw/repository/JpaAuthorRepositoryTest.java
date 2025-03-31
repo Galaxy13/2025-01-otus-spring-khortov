@@ -34,7 +34,7 @@ class JpaAuthorRepositoryTest {
     void shouldFindAllAuthors() {
         var actualAuthors = authorRepository.findAllAuthors();
         var expectedAuthors = LongStream.range(1, 4).boxed().map(id -> em.find(Author.class, id)).toList();
-        assertThat(actualAuthors).usingRecursiveComparison().isEqualTo(expectedAuthors);
+        assertThat(actualAuthors).isEqualTo(expectedAuthors);
     }
 
     @DisplayName("Find existing author by id")
@@ -45,7 +45,6 @@ class JpaAuthorRepositoryTest {
         var actualAuthor = authorRepository.findById(expectedAuthor.getId());
         assertThat(actualAuthor).isPresent()
                 .get()
-                .usingRecursiveComparison()
                 .isEqualTo(expectedAuthor);
     }
 
@@ -66,9 +65,8 @@ class JpaAuthorRepositoryTest {
                 .matches(author1 -> author1.getId() > 0)
                 .isEqualTo(expectedAuthor);
 
-        var foundAuthor = authorRepository.findById(actualAuthor.getId());
-        assertThat(foundAuthor).isNotNull().isPresent()
-                .get()
+        var foundAuthor = em.find(Author.class, actualAuthor.getId());
+        assertThat(foundAuthor).isNotNull()
                 .isEqualTo(expectedAuthor);
     }
 
@@ -79,9 +77,8 @@ class JpaAuthorRepositoryTest {
         var actualAuthor = authorRepository.save(expectedAuthor);
         assertThat(actualAuthor).isNotNull().usingRecursiveComparison().isEqualTo(expectedAuthor);
 
-        var findAuthor = authorRepository.findById(actualAuthor.getId());
-        assertThat(findAuthor).isPresent()
-                .get()
+        var findAuthor = em.find(Author.class, actualAuthor.getId());
+        assertThat(findAuthor).isNotNull()
                 .usingRecursiveComparison()
                 .isEqualTo(expectedAuthor);
     }
