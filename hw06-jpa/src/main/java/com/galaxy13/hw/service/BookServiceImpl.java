@@ -1,6 +1,5 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.converter.BookDtoConverter;
 import com.galaxy13.hw.dto.BookDto;
 import com.galaxy13.hw.repository.AuthorRepository;
 import com.galaxy13.hw.repository.BookRepository;
@@ -10,6 +9,7 @@ import com.galaxy13.hw.model.Book;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.core.convert.converter.Converter;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +26,7 @@ public class BookServiceImpl implements BookService {
 
     private final GenreRepository genreRepository;
 
-    private final BookDtoConverter bookDtoConverter;
+    private final Converter<Book, BookDto> bookDtoConverter;
 
     @Transactional(readOnly = true)
     @Override

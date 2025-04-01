@@ -1,13 +1,13 @@
 package com.galaxy13.hw.service;
 
 
-import com.galaxy13.hw.converter.GenreDtoConverter;
 import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.repository.GenreRepository;
 import com.galaxy13.hw.model.Genre;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.core.convert.converter.Converter;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +17,7 @@ import java.util.Optional;
 public class GenreServiceImpl implements GenreService {
     private final GenreRepository genreRepository;
 
-    private final GenreDtoConverter genreDtoConverter;
+    private final Converter<Genre, GenreDto> genreDtoConverter;
 
     @Transactional(readOnly = true)
     @Override

@@ -1,6 +1,6 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.converter.AuthorDtoConverter;
+import org.springframework.core.convert.converter.Converter;
 import com.galaxy13.hw.dto.AuthorDto;
 import com.galaxy13.hw.repository.AuthorRepository;
 import com.galaxy13.hw.model.Author;
@@ -16,7 +16,7 @@ import java.util.Optional;
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository authorRepository;
 
-    private final AuthorDtoConverter authorDtoConverter;
+    private final Converter<Author, AuthorDto> authorDtoConverter;
 
     @Transactional(readOnly = true)
     @Override

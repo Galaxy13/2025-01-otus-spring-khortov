@@ -1,6 +1,5 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.converter.CommentDtoConverter;
 import com.galaxy13.hw.dto.CommentDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Book;
@@ -8,6 +7,7 @@ import com.galaxy13.hw.model.Comment;
 import com.galaxy13.hw.repository.BookRepository;
 import com.galaxy13.hw.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final BookRepository bookRepository;
 
-    private final CommentDtoConverter commentDtoConverter;
+    private final Converter<Comment, CommentDto> commentDtoConverter;
 
     @Transactional(readOnly = true)
     @Override
