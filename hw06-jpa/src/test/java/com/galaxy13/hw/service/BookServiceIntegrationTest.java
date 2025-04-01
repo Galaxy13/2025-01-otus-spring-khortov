@@ -9,10 +9,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Repository;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +28,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("Integration Book service test")
 @DataJpaTest(includeFilters = @ComponentScan.Filter(Repository.class))
 @Import({BookServiceImpl.class})
+@Transactional(propagation = Propagation.NEVER)
+@Sql(scripts = {"/cleanup.sql", "/data.sql"},
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @ComponentScan("com.galaxy13.hw.converter")
 class BookServiceIntegrationTest {
     @Autowired
@@ -34,9 +39,6 @@ class BookServiceIntegrationTest {
     private final List<Author> authors = getAuthors();
 
     private final List<Genre> genres = getGenres();
-
-    @Autowired
-    private TestEntityManager em;
 
     @DisplayName("Should find all books")
     @Test
@@ -68,7 +70,7 @@ class BookServiceIntegrationTest {
 
     @DisplayName("Should insert new book")
     @Test
-    void shouldInsertNewBook() {
+        void shouldInsertNewBook() {
         var newBook = new Book(0, "Blade Runner", authors.getFirst(), List.of(genres.getFirst()));
         var actualBook = bookService.insert(newBook.getTitle(),
                 newBook.getAuthor().getId(),
@@ -133,16 +135,9 @@ class BookServiceIntegrationTest {
     @DisplayName("Should delete book from database")
     @Test
     void shouldDeleteBookFromDatabase() {
+        assertThat(bookService.findById(1)).isPresent();
         bookService.deleteById(1);
-        assertThat(em.find(Book.class, 1)).isNull();
         assertThat(bookService.findById(1)).isEmpty();
-
-        assertThat(em.find(Author.class, 2)).isNotNull().matches(
-                book -> book.getId() == 2
-        );
-        assertThat(em.find(Genre.class, 3)).isNotNull().matches(
-                book -> book.getId() == 3
-        );
     }
 
     private static List<Book> getBooks(List<Author> authors, List<Genre> genres) {

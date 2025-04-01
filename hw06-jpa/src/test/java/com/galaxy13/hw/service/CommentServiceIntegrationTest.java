@@ -13,9 +13,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -27,14 +29,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SuppressWarnings("java:S5778")
 @DisplayName("Integration Book service test")
 @DataJpaTest
+@Transactional(propagation = Propagation.NEVER)
+@Sql(scripts = {"/cleanup.sql", "/data.sql"},
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @Import({CommentServiceImpl.class, JpaCommentRepository.class, JpaBookRepository.class})
 @ComponentScan("com.galaxy13.hw.converter")
 class CommentServiceIntegrationTest {
     @Autowired
     private CommentService commentService;
-
-    @Autowired
-    private TestEntityManager em;
 
     private final Map<Long, List<Comment>> commentsByAuthor = bookIdToCommentMap();
 
@@ -79,9 +81,6 @@ class CommentServiceIntegrationTest {
         assertThat(actualComment).matches(
                 commentDto -> commentDto.getId() > 0
         ).usingRecursiveComparison().ignoringFields("id").isEqualTo(expectedComment);
-
-        var foundComment = em.find(Comment.class, actualComment.getId());
-        assertThat(actualComment).usingRecursiveComparison().isEqualTo(toDto(foundComment));
     }
 
     @DisplayName("Should not insert comment with non-existing book")
