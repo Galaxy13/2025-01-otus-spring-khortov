@@ -33,7 +33,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ComponentScan("com.galaxy13.hw.converter")
 class BookServiceIntegrationTest {
     private final List<Author> authors = getAuthors();
+
     private final List<Genre> genres = getGenres();
+
     @Autowired
     private BookService bookService;
 

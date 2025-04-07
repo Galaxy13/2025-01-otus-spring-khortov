@@ -33,7 +33,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Import({CommentServiceImpl.class})
 @ComponentScan("com.galaxy13.hw.converter")
 class CommentServiceIntegrationTest {
+
     private final Map<Long, List<Comment>> commentsByAuthor = bookIdToCommentMap();
+
     @Autowired
     private CommentService commentService;
 

@@ -1,8 +1,5 @@
 package com.galaxy13.hw.repository;
 
-import com.galaxy13.hw.model.Author;
-import com.galaxy13.hw.model.Book;
-import com.galaxy13.hw.model.Genre;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +7,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import com.galaxy13.hw.model.Author;
+import com.galaxy13.hw.model.Book;
+import com.galaxy13.hw.model.Genre;
 
 import java.util.List;
 import java.util.stream.LongStream;
