@@ -1,4 +1,4 @@
-package com.galaxy13.hw.converter;
+package com.galaxy13.hw.mapper;
 
 import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.model.Genre;
@@ -7,7 +7,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GenreDtoConverter implements Converter<Genre, GenreDto> {
+public class GenreDtoMapper implements Converter<Genre, GenreDto> {
 
     @Override
     public GenreDto convert(@NonNull Genre source) {

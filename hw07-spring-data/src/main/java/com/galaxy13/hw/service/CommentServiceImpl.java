@@ -21,29 +21,46 @@ public class CommentServiceImpl implements CommentService {
 
     private final BookRepository bookRepository;
 
-    private final Converter<Comment, CommentDto> commentDtoConverter;
+    private final Converter<Comment, CommentDto> commentDtoMapper;
 
     @Transactional(readOnly = true)
     @Override
     public List<CommentDto> findCommentByBookId(long id) {
-        return commentRepository.findByBookId(id).stream().map(commentDtoConverter::convert).toList();
+        return commentRepository.findByBookId(id).stream().map(commentDtoMapper::convert).toList();
     }
 
     @Transactional(readOnly = true)
     @Override
     public Optional<CommentDto> findCommentById(long id) {
-        return commentRepository.findById(id).map(commentDtoConverter::convert);
+        return commentRepository.findById(id).map(commentDtoMapper::convert);
     }
 
     @Transactional
     @Override
-    public CommentDto saveComment(long id, String text, long bookId) {
+    public CommentDto update(long id, String text) {
+        if (text == null || text.isEmpty()) {
+            throw new IllegalArgumentException("No comment text");
+        }
+        Comment comment = commentRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("No comment found with id: %d".formatted(id))
+        );
+        comment.setText(text);
+        return commentDtoMapper.convert(comment);
+    }
+
+    @Transactional
+    @Override
+    public CommentDto create(String text, long bookId) {
         if (text == null || text.isEmpty() || bookId == 0) {
             throw new IllegalArgumentException("No comment text and/or wrong book id");
         }
-        Book book = bookRepository.findById(bookId).orElseThrow(
+        Book book = findBookById(bookId);
+        Comment comment = commentRepository.save(new Comment(0, text, book));
+        return commentDtoMapper.convert(comment);
+    }
+
+    private Book findBookById(long bookId) {
+        return bookRepository.findById(bookId).orElseThrow(
                 () -> new EntityNotFoundException("Book not found"));
-        Comment comment = commentRepository.save(new Comment(id, text, book));
-        return commentDtoConverter.convert(comment);
     }
 }

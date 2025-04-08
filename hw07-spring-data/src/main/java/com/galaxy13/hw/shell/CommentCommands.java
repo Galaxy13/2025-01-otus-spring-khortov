@@ -30,14 +30,14 @@ public class CommentCommands {
     @Command(command = "save", alias = "cins",
             description = "Add new comment to book by id; params: {bookId: long} {text: String}")
     public String insertComment(long bookId, String text) {
-        var savedCommentDto = commentService.saveComment(0, text, bookId);
+        var savedCommentDto = commentService.create(text, bookId);
         return savedCommentDto.toString();
     }
 
     @Command(command = "update", alias = "cupd",
-            description = "Update existing comment; params: {id: long} {bookId: long} {text: String}")
-    public String updateComment(long id, long bookId, String text) {
-        var updatedCommentDto = commentService.saveComment(id, text, bookId);
+            description = "Update text of existing comment; params: {id: long} {text: String}")
+    public String updateComment(long id, String text) {
+        var updatedCommentDto = commentService.update(id, text);
         return updatedCommentDto.toString();
     }
 }

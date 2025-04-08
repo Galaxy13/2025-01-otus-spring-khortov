@@ -16,18 +16,18 @@ import java.util.Optional;
 public class GenreServiceImpl implements GenreService {
     private final GenreRepository genreRepository;
 
-    private final Converter<Genre, GenreDto> genreDtoConverter;
+    private final Converter<Genre, GenreDto> genreDtoMapper;
 
     @Transactional(readOnly = true)
     @Override
     public List<GenreDto> findAllGenres() {
-        return genreRepository.findAll().stream().map(genreDtoConverter::convert).toList();
+        return genreRepository.findAll().stream().map(genreDtoMapper::convert).toList();
     }
 
     @Transactional(readOnly = true)
     @Override
     public Optional<GenreDto> findGenreById(long id) {
-        return genreRepository.findById(id).map(genreDtoConverter::convert);
+        return genreRepository.findById(id).map(genreDtoMapper::convert);
     }
 
     @Transactional
@@ -37,6 +37,6 @@ public class GenreServiceImpl implements GenreService {
             throw new IllegalArgumentException("Genre name cannot be null or empty");
         }
         Genre genre = genreRepository.save(new Genre(id, name));
-        return genreDtoConverter.convert(genre);
+        return genreDtoMapper.convert(genre);
     }
 }

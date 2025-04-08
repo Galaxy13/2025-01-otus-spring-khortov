@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Transactional(propagation = Propagation.NEVER)
 @Sql(scripts = {"/cleanup.sql", "/data.sql"},
         executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@ComponentScan("com.galaxy13.hw.converter")
+@ComponentScan("com.galaxy13.hw.mapper")
 class BookServiceIntegrationTest {
     private final List<Author> authors = getAuthors();
 

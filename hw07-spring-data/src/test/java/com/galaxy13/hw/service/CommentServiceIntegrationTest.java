@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Sql(scripts = {"/cleanup.sql", "/data.sql"},
         executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @Import({CommentServiceImpl.class})
-@ComponentScan("com.galaxy13.hw.converter")
+@ComponentScan("com.galaxy13.hw.mapper")
 class CommentServiceIntegrationTest {
 
     private final Map<Long, List<Comment>> commentsByAuthor = bookIdToCommentMap();
@@ -94,8 +94,7 @@ class CommentServiceIntegrationTest {
         Book book = new Book();
         book.setId(2);
         var newComment = new Comment(0, "New comment", book);
-        var actualComment = commentService.saveComment(
-                newComment.getId(),
+        var actualComment = commentService.create(
                 newComment.getText(),
                 newComment.getBook().getId()
         );
@@ -111,8 +110,7 @@ class CommentServiceIntegrationTest {
         Book book = new Book();
         book.setId(-1);
         var newComment = new Comment(0, "New comment", book);
-        assertThatThrownBy(() -> commentService.saveComment(
-                newComment.getId(),
+        assertThatThrownBy(() -> commentService.create(
                 newComment.getText(),
                 newComment.getBook().getId()
         )).isInstanceOf(RuntimeException.class);
@@ -122,27 +120,25 @@ class CommentServiceIntegrationTest {
     @Test
     void shouldUpdateComment() {
         Book book = new Book();
-        book.setId(3);
+        book.setId(1);
         var updateComment = new Comment(1, "New comment", book);
-        var actualComment = commentService.saveComment(
+        var actualComment = commentService.update(
                 updateComment.getId(),
-                updateComment.getText(),
-                updateComment.getBook().getId()
+                updateComment.getText()
         );
         var expectedComment = toDto(updateComment);
         assertThat(actualComment).usingRecursiveComparison().isEqualTo(expectedComment);
     }
 
-    @DisplayName("Should not update comment with non-existing book id")
+    @DisplayName("Should not update non-existing comment")
     @Test
     void shouldNotUpdateNonExistingComment() {
         Book book = new Book();
-        book.setId(-1);
-        var newComment = new Comment(1, "New comment", book);
-        assertThatThrownBy(() -> commentService.saveComment(
+        book.setId(1);
+        var newComment = new Comment(-1, "New comment", book);
+        assertThatThrownBy(() -> commentService.update(
                 newComment.getId(),
-                newComment.getText(),
-                newComment.getBook().getId()
+                newComment.getText()
         )).isInstanceOf(RuntimeException.class);
     }
 

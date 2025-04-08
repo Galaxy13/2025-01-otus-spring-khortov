@@ -1,4 +1,4 @@
-package com.galaxy13.hw.converter;
+package com.galaxy13.hw.mapper;
 
 import com.galaxy13.hw.dto.AuthorDto;
 import com.galaxy13.hw.model.Author;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import lombok.NonNull;
 
 @Component
-public class AuthorDtoConverter implements Converter<Author, AuthorDto> {
+public class AuthorDtoMapper implements Converter<Author, AuthorDto> {
 
     @Override
     public AuthorDto convert(@NonNull Author source) {

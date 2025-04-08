@@ -1,4 +1,4 @@
-package com.galaxy13.hw.converter;
+package com.galaxy13.hw.mapper;
 
 import com.galaxy13.hw.dto.AuthorDto;
 import com.galaxy13.hw.dto.BookDto;
@@ -14,16 +14,16 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-public class BookDtoConverter implements Converter<Book, BookDto> {
+public class BookDtoMapper implements Converter<Book, BookDto> {
 
-    private final AuthorDtoConverter authorDtoConverter;
+    private final AuthorDtoMapper authorDtoMapper;
 
-    private final GenreDtoConverter genreDtoConverter;
+    private final GenreDtoMapper genreDtoMapper;
 
     @Override
     public BookDto convert(@NonNull Book source) {
-        AuthorDto authorDto = authorDtoConverter.convert(source.getAuthor());
-        List<GenreDto> genres = source.getGenres().stream().map(genreDtoConverter::convert).toList();
+        AuthorDto authorDto = authorDtoMapper.convert(source.getAuthor());
+        List<GenreDto> genres = source.getGenres().stream().map(genreDtoMapper::convert).toList();
         return new BookDto(source.getId(), source.getTitle(), authorDto, genres);
     }
 }

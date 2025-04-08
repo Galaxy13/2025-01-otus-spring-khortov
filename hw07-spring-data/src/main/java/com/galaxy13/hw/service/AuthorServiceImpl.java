@@ -16,18 +16,18 @@ import java.util.Optional;
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository authorRepository;
 
-    private final Converter<Author, AuthorDto> authorDtoConverter;
+    private final Converter<Author, AuthorDto> authorDtoMapper;
 
     @Transactional(readOnly = true)
     @Override
     public List<AuthorDto> findAllAuthors() {
-        return authorRepository.findAll().stream().map(authorDtoConverter::convert).toList();
+        return authorRepository.findAll().stream().map(authorDtoMapper::convert).toList();
     }
 
     @Transactional(readOnly = true)
     @Override
     public Optional<AuthorDto> findAuthorById(long id) {
-        return authorRepository.findById(id).map(authorDtoConverter::convert);
+        return authorRepository.findById(id).map(authorDtoMapper::convert);
     }
 
     @Transactional
@@ -37,6 +37,6 @@ public class AuthorServiceImpl implements AuthorService {
             throw new IllegalArgumentException("Name and/or surname can't be empty");
         }
         Author author = authorRepository.save(new Author(id, firstName, lastName));
-        return authorDtoConverter.convert(author);
+        return authorDtoMapper.convert(author);
     }
 }
