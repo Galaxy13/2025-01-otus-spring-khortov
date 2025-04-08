@@ -1,0 +1,19 @@
+DELETE
+FROM comments;
+DELETE
+FROM genres_relationships;
+DELETE
+FROM books;
+DELETE
+FROM authors;
+DELETE
+FROM genres;
+
+ALTER TABLE COMMENTS
+    alter column ID RESTART WITH 1;
+ALTER TABLE GENRES
+    alter column ID RESTART WITH 1;
+ALTER TABLE AUTHORS
+    alter column ID RESTART WITH 1;
+ALTER TABLE BOOKS
+    alter column ID RESTART WITH 1;
