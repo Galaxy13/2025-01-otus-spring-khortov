@@ -1,0 +1,106 @@
+{
+  "authors": [
+    {
+      "_id": "1",
+      "firstName": "Author_1",
+      "lastName": "Surname_1"
+    },
+    {
+      "_id": "2",
+      "firstName": "Author_2",
+      "lastName": "Surname_2"
+    },
+    {
+      "_id": "3",
+      "firstName": "Author_3",
+      "lastName": "Surname_3"
+    }
+  ],
+  "genres": [
+    {
+      "_id": "1",
+      "name": "Genre_1"
+    },
+    {
+      "_id": "2",
+      "name": "Genre_2"
+    },
+    {
+      "_id": "3",
+      "name": "Genre_3"
+    },
+    {
+      "_id": "4",
+      "name": "Genre_4"
+    },
+    {
+      "_id": "5",
+      "name": "Genre_5"
+    },
+    {
+      "_id": "6",
+      "name": "Genre_6"
+    }
+  ],
+  "books": [
+    {
+      "_id": "1",
+      "title": "BookTitle_1",
+      "author": "1",
+      "genres": [
+        { "$ref": "genres", "$id": "1" },
+        { "$ref": "genres", "$id": "2" }
+      ]
+    },
+    {
+      "_id": "2",
+      "title": "BookTitle_2",
+      "author": "2",
+      "genres": [
+        { "$ref": "genres", "$id": "3" },
+        { "$ref": "genres", "$id": "4" }
+      ]
+    },
+    {
+      "_id": "3",
+      "title": "BookTitle_3",
+      "author": "3",
+      "genres": [
+        { "$ref": "genres", "$id": "5" },
+        { "$ref": "genres", "$id": "6" }
+      ]
+    }
+  ],
+  "comments": [
+    {
+      "_id": "1",
+      "text": "C_1",
+      "bookId": "1"
+    },
+    {
+      "_id": "2",
+      "text": "C_2",
+      "bookId": "1"
+    },
+    {
+      "_id": "3",
+      "text": "C_3",
+      "bookId": "2"
+    },
+    {
+      "_id": "4",
+      "text": "C_4",
+      "bookId": "2"
+    },
+    {
+      "_id": "5",
+      "text": "C_5",
+      "bookId": "3"
+    },
+    {
+      "_id": "6",
+      "text": "C_6",
+      "bookId": "3"
+    }
+  ]
+}

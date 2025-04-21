@@ -1,0 +1,25 @@
+spring:
+  shell:
+    interactive:
+      enabled: false
+  data:
+    mongodb:
+      port: 0
+      database: testdb
+
+mongock:
+  enabled: false
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 4.4.11
+logging:
+  level:
+    de:
+      flapdoodle:
+        embed:
+          mongo:
+            WARN
+
