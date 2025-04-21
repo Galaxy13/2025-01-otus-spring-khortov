@@ -4,7 +4,6 @@ spring:
       enabled: false
   data:
     mongodb:
-      port: 0
       database: testdb
 
 mongock:
