@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("JPA Genre Repository test")
+@DisplayName("Mongo Genre Repository test")
 @DataMongoTest
 class MongoGenreRepositoryTest extends AbstractBaseMongoTest {
 
