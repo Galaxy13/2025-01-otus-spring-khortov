@@ -33,11 +33,11 @@ public class InitialMigration {
             {
                 $jsonSchema: {
                     bsonType: "object",
-                    required: ["text", "bookId"],
+                    required: ["text", "book"],
                     properties: {
                         text: { bsonType: "string" },
-                        bookId: {
-                            bsonType: "objectId",
+                        book: {
+                            bsonType: "object",
                             description: "Reference ID to Book document"
                         }
                     }
@@ -55,7 +55,7 @@ public class InitialMigration {
                     properties: {
                         title: { bsonType: "string" },
                         author: {
-                            bsonType: "objectId",
+                            bsonType: "object",
                         },
                         genres: {
                             bsonType: "array",
