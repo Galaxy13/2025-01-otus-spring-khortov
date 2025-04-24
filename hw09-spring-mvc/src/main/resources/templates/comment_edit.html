@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+    <head>
+        <title>Редактирование комментария</title>
+        <meta charset="UTF-8"/>
+        <link th:href="@{/css/comment_edit.css}" rel="stylesheet" type="text/css"/>
+    </head>
+<body>
+<form th:action="@{/comments/edit}"  method="post">
+    <input type="hidden" name="comment_id" th:value="${comment.id}"/>
+    <input type="hidden" name="book_id" th:value="${comment.bookId}"/>
+
+    <label for="text">Текст</label>
+    <input type="text" name="comment_text" id="text" th:value="${comment.text}"/>
+
+    <button type="submit">Сохранить</button>
+</form>
+</body>
+</html>
