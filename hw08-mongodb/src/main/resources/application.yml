@@ -1,0 +1,22 @@
+spring:
+  shell:
+    interactive:
+      enabled: true
+  data:
+    mongodb:
+      host: "localhost"
+      port: 27017
+      username: "user"
+      password: "123"
+      database: "maindb"
+      auto-index-creation: true
+
+mongock:
+  runner-type: "InitializingBean"
+  enabled: true
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
+  migration-scan-package: "com.galaxy13.hw.migrations"
+
