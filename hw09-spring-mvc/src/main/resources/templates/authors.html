@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <title>Авторы</title>
+    <meta charset="UTF-8"/>
+    <link th:href="@{/css/authors.css}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table style="width: 300px" class="authors">
+    <thead>
+    <tr>
+        <th>Номер</th>
+        <th>Имя</th>
+        <th>Фамилия</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+        <tr th:each="author: ${authors}">
+            <td th:text="${author.id}">1</td>
+            <td th:text="${author.firstName}">Фёдор</td>
+            <td th:text="${author.lastName}">Достоевсикй</td>
+            <td>
+                <form method="get" th:action="@{/authors/edit}">
+                    <input type="hidden" name="id" th:value="${author.id}">
+                    <button type="submit" class="link-button">Редактировать</button>
+                </form>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<h2>Новый автор:</h2>
+<form method="post" th:action="@{/authors/new}">
+    <label for="firstName">Имя</label>
+    <input name="firstName" id="firstName">
+
+    <label for="lastName">Фамилия</label>
+    <input name="lastName" id="lastName">
+
+    <button type="submit" class="link-button">Сохранить</button>
+</form>
+</body>
+</html>

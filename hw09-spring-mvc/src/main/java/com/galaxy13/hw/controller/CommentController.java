@@ -42,7 +42,7 @@ public class CommentController {
     }
 
     @PostMapping("comments/new")
-    private String newCommentPage(@RequestParam("comment_text") String text,
+    public String newCommentPage(@RequestParam("comment_text") String text,
                                   @RequestParam("book_id") long bookId) {
         commentService.create(text, bookId);
         return "redirect:/comments?book_id=" + bookId;

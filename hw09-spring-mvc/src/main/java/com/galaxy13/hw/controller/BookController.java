@@ -10,22 +10,29 @@ import com.galaxy13.hw.service.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
 public class BookController {
+
+    private static final String REDIRECT = "redirect:/books";
 
     private final BookService bookService;
 
     private final AuthorService authorService;
 
     private final GenreService genreService;
+
+    @GetMapping("/")
+    public String index() {
+        return "index";
+    }
 
     @GetMapping("/books")
     public String bookPage(Model model) {
@@ -48,13 +55,17 @@ public class BookController {
 
     @GetMapping("/books/new")
     public String newBook(Model model) {
-        return "redirect:/book_edit";
+        List<AuthorDto> authors = authorService.findAllAuthors();
+        List<GenreDto> genres = genreService.findAllGenres();
+        model.addAttribute("authors", authors);
+        model.addAttribute("genres", genres);
+        return "book_new";
     }
 
     @PostMapping("/books/delete")
     public String deleteBook(@RequestParam("id") long id) {
         bookService.deleteById(id);
-        return "redirect:/books";
+        return REDIRECT;
     }
 
     @PostMapping("/books/edit")
@@ -63,6 +74,14 @@ public class BookController {
                              @RequestParam("authorId") long authorId,
                              @RequestParam("genreIds") List<Long> genreIds) {
         bookService.update(id, title, authorId, new HashSet<>(genreIds));
-        return "redirect:/books";
+        return REDIRECT;
+    }
+
+    @PostMapping("/books/new")
+    public String newBook(@RequestParam("title") String title,
+                          @RequestParam("authorId") long authorId,
+                          @RequestParam("genreIds") List<Long> genreIds) {
+        bookService.insert(title, authorId, new HashSet<>(genreIds));
+        return REDIRECT;
     }
 }

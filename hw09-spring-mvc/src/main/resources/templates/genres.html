@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <title>Жанры</title>
+    <meta charset="UTF-8"/>
+    <link th:href="@{/css/genres.css}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table style="width: 300px" class="authors">
+    <thead>
+    <tr>
+        <th>Номер</th>
+        <th>Название</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="genre: ${genres}">
+        <td th:text="${genre.id}">1</td>
+        <td th:text="${genre.name}">Фантастика</td>
+        <td>
+            <form method="get" th:action="@{/genres/edit}">
+                <input type="hidden" name="id" th:value="${genre.id}">
+                <button type="submit" class="link-button">Редактировать</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<h2>Новый жанр:</h2>
+<form method="post" th:action="@{/genres/new}">
+
+    <label for="name">Название</label>
+    <input name="name" id="name">
+
+    <button type="submit" class="link-button">Сохранить</button>
+</form>
+</body>
+</html>

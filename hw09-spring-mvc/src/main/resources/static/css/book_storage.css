@@ -64,6 +64,11 @@ form[action*="edit"] .link-button {
     color: white;
 }
 
+form[action*="new"] .link-button {
+    background-color: #17a2b8;
+    color: white;
+}
+
 form[action*="edit"] .link-button:hover {
     background-color: #138496;
 }

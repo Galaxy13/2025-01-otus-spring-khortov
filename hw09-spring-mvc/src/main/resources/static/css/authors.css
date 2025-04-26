@@ -1,0 +1,110 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+}
+
+table.authors {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+table.authors thead {
+    background-color: #2c3e50;
+    color: white;
+}
+
+table.authors th,
+table.authors td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table.authors tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+table.authors tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+.link-button {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 2px;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    background-color: #17a2b8;
+    color: white;
+}
+
+.link-button:hover {
+    background-color: #138496;
+}
+
+form {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="hidden"] {
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input[type="text"]:focus {
+    border-color: #17a2b8;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.25);
+}
+
+h2 {
+    color: #2c3e50;
+    margin-top: 30px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+td:last-child {
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    table.authors {
+        display: block;
+        overflow-x: auto;
+    }
+
+    form {
+        padding: 15px;
+    }
+}
