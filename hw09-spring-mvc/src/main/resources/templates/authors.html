@@ -21,8 +21,7 @@
             <td th:text="${author.firstName}">Фёдор</td>
             <td th:text="${author.lastName}">Достоевсикй</td>
             <td>
-                <form method="get" th:action="@{/authors/edit}">
-                    <input type="hidden" name="id" th:value="${author.id}">
+                <form method="get" th:action="@{/authors/{id}(id=${author.id})}">
                     <button type="submit" class="link-button">Редактировать</button>
                 </form>
             </td>
@@ -30,7 +29,7 @@
     </tbody>
 </table>
 <h2>Новый автор:</h2>
-<form method="post" th:action="@{/authors/new}">
+<form method="post" th:action="@{/authors}">
     <label for="firstName">Имя</label>
     <input name="firstName" id="firstName">
 

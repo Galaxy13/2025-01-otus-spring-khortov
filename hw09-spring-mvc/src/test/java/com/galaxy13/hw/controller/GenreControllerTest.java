@@ -1,6 +1,6 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.service.GenreDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.helper.UriBuilder;
 import com.galaxy13.hw.service.GenreService;
@@ -12,9 +12,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.galaxy13.hw.helper.TestData.getGenres;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
@@ -55,9 +55,9 @@ class GenreControllerTest {
     @Test
     void shouldReturnEditGenreView() throws Exception {
         GenreDto expectedGenre = getGenres().getFirst();
-        when(genreService.findGenreById(expectedGenre.getId())).thenReturn(Optional.of(expectedGenre));
+        when(genreService.findGenreById(expectedGenre.getId())).thenReturn(expectedGenre);
 
-        MvcResult result = mvc.perform(get("/genres/edit?id=" + expectedGenre.getId()))
+        MvcResult result = mvc.perform(get("/genres/" + expectedGenre.getId()))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("genre"))
                 .andExpect(view().name("genre_edit"))
@@ -70,9 +70,9 @@ class GenreControllerTest {
     @Test
     void shouldThrowExceptionWhenGenreNotFound() {
         GenreDto nonExistingGenre = new GenreDto(0, null);
-        when(genreService.findGenreById(nonExistingGenre.getId())).thenReturn(Optional.empty());
+        when(genreService.findGenreById(nonExistingGenre.getId())).thenThrow(EntityNotFoundException.class);
 
-        assertThatThrownBy(() -> mvc.perform(get("/genres/edit?id=" + nonExistingGenre.getId())))
+        assertThatThrownBy(() -> mvc.perform(get("/genres/" + nonExistingGenre.getId())))
                 .matches(e -> e.getCause() instanceof EntityNotFoundException);
     }
 
@@ -81,25 +81,24 @@ class GenreControllerTest {
         GenreDto genre = getGenres().get(1);
         GenreDto expectedGenre = new GenreDto(genre.getId(), "New Genre");
 
-        String uri = UriBuilder.fromStringUri("/genres/edit")
-                .queryParam("id", expectedGenre.getId())
+        String uri = UriBuilder.fromStringUri("/genres/" + expectedGenre.getId())
                 .queryParam("name", expectedGenre.getName())
                 .build();
 
         mvc.perform(post(uri))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/genres"));
-        verify(genreService, times(1)).saveGenre(expectedGenre.getId(), expectedGenre.getName());
+        verify(genreService, times(1)).update(expectedGenre.getId(), expectedGenre.getName());
     }
 
     @Test
     void shouldCreateGenre() throws Exception {
         GenreDto newGenre = new GenreDto(0, "New Genre");
 
-        String uri = "/genres/new?name=" + newGenre.getName();
+        String uri = "/genres?name=" + newGenre.getName();
         mvc.perform(post(uri))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/genres"));
-        verify(genreService, times(1)).saveGenre(newGenre.getId(), newGenre.getName());
+        verify(genreService, times(1)).insert(any(GenreDto.class));
     }
 }

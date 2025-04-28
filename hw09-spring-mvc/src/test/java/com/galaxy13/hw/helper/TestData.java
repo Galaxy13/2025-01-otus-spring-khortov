@@ -1,9 +1,9 @@
 package com.galaxy13.hw.helper;
 
-import com.galaxy13.hw.dto.AuthorDto;
-import com.galaxy13.hw.dto.BookDto;
-import com.galaxy13.hw.dto.CommentDto;
-import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.service.AuthorDto;
+import com.galaxy13.hw.dto.service.BookDto;
+import com.galaxy13.hw.dto.service.CommentDto;
+import com.galaxy13.hw.dto.service.GenreDto;
 
 import java.util.List;
 import java.util.Map;

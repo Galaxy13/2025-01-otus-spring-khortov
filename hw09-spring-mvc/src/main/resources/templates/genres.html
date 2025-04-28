@@ -19,8 +19,7 @@
         <td th:text="${genre.id}">1</td>
         <td th:text="${genre.name}">Фантастика</td>
         <td>
-            <form method="get" th:action="@{/genres/edit}">
-                <input type="hidden" name="id" th:value="${genre.id}">
+            <form method="get" th:action="@{/genres/{id}(id=${genre.id})}">
                 <button type="submit" class="link-button">Редактировать</button>
             </form>
         </td>
@@ -28,7 +27,7 @@
     </tbody>
 </table>
 <h2>Новый жанр:</h2>
-<form method="post" th:action="@{/genres/new}">
+<form method="post" th:action="@{/genres}">
 
     <label for="name">Название</label>
     <input name="name" id="name">

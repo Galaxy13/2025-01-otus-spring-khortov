@@ -1,8 +1,9 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.AuthorDto;
-import com.galaxy13.hw.dto.BookDto;
-import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.mvc.BookModelDto;
+import com.galaxy13.hw.dto.service.AuthorDto;
+import com.galaxy13.hw.dto.service.BookDto;
+import com.galaxy13.hw.dto.service.GenreDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.helper.UriBuilder;
 import com.galaxy13.hw.service.AuthorService;
@@ -17,21 +18,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.galaxy13.hw.helper.TestData.getGenres;
 import static com.galaxy13.hw.helper.TestData.getAuthors;
 import static com.galaxy13.hw.helper.TestData.getBooks;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-
 
 @WebMvcTest(controllers = BookController.class)
 class BookControllerTest {
@@ -67,11 +67,11 @@ class BookControllerTest {
     @Test
     void shouldReturnViewToUpdateBook() throws Exception {
         BookDto expectedBook = getBooks().getFirst();
-        Mockito.when(bookService.findById(expectedBook.getId())).thenReturn(Optional.of(expectedBook));
+        Mockito.when(bookService.findById(expectedBook.getId())).thenReturn(expectedBook);
         Mockito.when(authorService.findAllAuthors()).thenReturn(getAuthors());
         Mockito.when(genreService.findAllGenres()).thenReturn(getGenres());
 
-        MvcResult result = mvc.perform(get("/books/edit?id=" + expectedBook.getId()))
+        MvcResult result = mvc.perform(get("/books/" + expectedBook.getId()))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("book", "authors", "genres"))
                 .andExpect(view().name("book_edit"))
@@ -91,26 +91,23 @@ class BookControllerTest {
         BookDto book = getBooks().getFirst();
         AuthorDto newAuthor = getAuthors().get(1);
         List<GenreDto> newGenres = getGenres().subList(1, 3);
-        BookDto expectedBook = new BookDto(book.getId(), "New title", newAuthor, newGenres);
+        BookModelDto expectedBook = new BookModelDto("New title", newAuthor.getId(),
+                newGenres.stream().map(GenreDto::getId).collect(Collectors.toSet()));
 
-        Mockito.when(bookService.update(expectedBook.getId(),
-                expectedBook.getTitle(),
-                expectedBook.getAuthor().getId(),
-                expectedBook.getGenres().stream().map(GenreDto::getId).collect(Collectors.toSet())))
-                .thenReturn(expectedBook);
+        Mockito.when(bookService.update(book.getId(), expectedBook))
+                .thenReturn(new BookDto(book.getId(), expectedBook.title(),
+                        newAuthor, newGenres));
 
-        String uri = UriBuilder.fromStringUri("/books/edit").queryParam("id", expectedBook.getId())
-                .queryParam("title", expectedBook.getTitle())
-                .queryParam("authorId", expectedBook.getAuthor().getId())
-                .queryParam("genreIds", expectedBook.getGenres().stream().map(GenreDto::getId).toList())
+        String uri = UriBuilder.fromStringUri("/books/" + book.getId())
+                .queryParam("title", expectedBook.title())
+                .queryParam("authorId", expectedBook.authorId())
+                .queryParam("genreIds", expectedBook.genreIds())
                 .build();
 
         mvc.perform(post(uri)).andExpect(status().is3xxRedirection());
 
-        Mockito.verify(bookService, Mockito.times(1)).update(expectedBook.getId(),
-                        expectedBook.getTitle(),
-                        expectedBook.getAuthor().getId(),
-                        expectedBook.getGenres().stream().map(GenreDto::getId).collect(Collectors.toSet()));
+        Mockito.verify(bookService, Mockito.times(1))
+                .update(book.getId(), expectedBook);
     }
 
     @Test
@@ -135,32 +132,25 @@ class BookControllerTest {
 
     @Test
     void shouldInsertNewBook() throws Exception {
-        BookDto newBook = new BookDto(0, "New Book", getAuthors().getFirst(), getGenres().subList(2, 4));
-        Mockito.when(bookService.insert(newBook.getTitle(),
-                newBook.getAuthor().getId(),
-                newBook.getGenres().stream().map(GenreDto::getId).collect(Collectors.toSet()))).thenReturn(newBook);
+        BookModelDto newBook = new BookModelDto("New Book", 1L, Set.of(1L, 2L));
 
-        String uri = UriBuilder.fromStringUri("/books/new")
-                .queryParam("title", newBook.getTitle())
-                .queryParam("authorId", newBook.getAuthor().getId())
-                .queryParam("genreIds", newBook.getGenres().stream().map(GenreDto::getId).toList())
+        String uri = UriBuilder.fromStringUri("/books")
+                .queryParam("title", newBook.title())
+                .queryParam("authorId", newBook.authorId())
+                .queryParam("genreIds", newBook.genreIds())
                 .build();
 
         mvc.perform(post(uri))
                 .andExpect(status().is3xxRedirection());
 
-        Mockito.verify(bookService, Mockito.times(1)).insert(
-                newBook.getTitle(),
-                newBook.getAuthor().getId(),
-                newBook.getGenres().stream().map(GenreDto::getId).collect(Collectors.toSet())
-        );
+        Mockito.verify(bookService, Mockito.times(1)).insert(newBook);
     }
 
     @Test
     void shouldDeleteBook() throws Exception {
         BookDto bookToDelete = getBooks().getFirst();
 
-        String uri = "/books/delete?id=" + bookToDelete.getId();
+        String uri = "/books/" + bookToDelete.getId() + "/delete";
         mvc.perform(post(uri))
                 .andExpect(status().is3xxRedirection());
         Mockito.verify(bookService, Mockito.times(1)).deleteById(bookToDelete.getId());
@@ -168,10 +158,9 @@ class BookControllerTest {
 
     @Test
     void shouldThrowExceptionWhenBookNotFoundOnEdit() {
-        BookDto nonExistingBook = new BookDto(0, "Non Existing Book", null, null);
-        Mockito.when(bookService.findById(nonExistingBook.getId())).thenReturn(Optional.empty());
+        Mockito.when(bookService.findById(-1L)).thenThrow(EntityNotFoundException.class);
 
-        assertThatThrownBy(() -> mvc.perform(get("/books/edit?id=" + nonExistingBook.getId())))
+        assertThatThrownBy(() -> mvc.perform(get("/books/" + -1L)))
                 .matches(e -> e.getCause() instanceof EntityNotFoundException);
     }
 

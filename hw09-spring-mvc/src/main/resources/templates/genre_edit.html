@@ -7,8 +7,7 @@
 </head>
 <body>
 <h2>Редактирование:</h2>
-<form method="post" th:action="@{/genres/edit}">
-    <input type="hidden" name="id" th:value="${genre.id}">
+<form method="post" th:action="@{/genres/{id}(id=${genre.id})}">
 
     <label for="name">Имя</label>
     <input name="name" id="name" th:value="${genre.name}" value="Фантастика">

@@ -1,4 +1,4 @@
-package com.galaxy13.hw.dto;
+package com.galaxy13.hw.dto.service;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

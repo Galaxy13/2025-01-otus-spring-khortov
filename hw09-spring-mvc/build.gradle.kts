@@ -26,7 +26,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-logging")
-    implementation("org.springframework.shell:spring-shell-starter")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.flywaydb:flyway-core")
     runtimeOnly("com.h2database:h2")
@@ -41,7 +40,6 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom(BOM_COORDINATES)
-        mavenBom("org.springframework.shell:spring-shell-dependencies:3.4.0")
     }
 }
 

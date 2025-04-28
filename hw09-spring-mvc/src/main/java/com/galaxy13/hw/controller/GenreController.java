@@ -1,14 +1,13 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.GenreDto;
-import com.galaxy13.hw.exception.EntityNotFoundException;
+import com.galaxy13.hw.dto.service.GenreDto;
 import com.galaxy13.hw.service.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Comparator;
@@ -30,23 +29,23 @@ public class GenreController {
         return "genres";
     }
 
-    @GetMapping("/genres/edit")
-    public String editGenre(@RequestParam("id") long id, Model model) {
-        GenreDto genre = genreService.findGenreById(id).orElseThrow(() ->
-                new EntityNotFoundException("Genre with id %d not found".formatted(id)));
+    @GetMapping("/genres/{id}")
+    public String editGenre(@PathVariable long id, Model model) {
+        GenreDto genre = genreService.findGenreById(id);
         model.addAttribute("genre", genre);
         return "genre_edit";
     }
 
-    @PostMapping("/genres/edit")
-    public String editGenre(@ModelAttribute("genre") GenreDto genre) {
-        genreService.saveGenre(genre.getId(), genre.getName());
+    @PostMapping("/genres/{id}")
+    public String editGenre(@PathVariable("id") long id,
+                            @RequestParam("name") String genreName) {
+        genreService.update(id, genreName);
         return "redirect:/genres";
     }
 
-    @PostMapping("/genres/new")
+    @PostMapping("/genres")
     public String saveGenre(@RequestParam("name") String name) {
-        genreService.saveGenre(0, name);
+        genreService.insert(new GenreDto(0, name));
         return "redirect:/genres";
     }
 }

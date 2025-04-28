@@ -1,19 +1,18 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.BookDto;
+import com.galaxy13.hw.dto.service.BookDto;
+import com.galaxy13.hw.dto.mvc.BookModelDto;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 public interface BookService {
-    Optional<BookDto> findById(long id);
+    BookDto findById(long id);
 
     List<BookDto> findAll();
 
-    BookDto insert(String title, long authorId, Set<Long> genreIds);
+    BookDto insert(BookModelDto newBook);
 
-    BookDto update(long id, String title, long authorId, Set<Long> genreIds);
+    BookDto update(long bookId, BookModelDto updateBook);
 
     void deleteById(long id);
 }

@@ -1,6 +1,6 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.dto.service.CommentDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.helper.UriBuilder;
 import com.galaxy13.hw.service.CommentService;
@@ -58,7 +58,7 @@ class CommentControllerTest {
         CommentDto expectedComment = getComments().getFirst();
         when(commentService.findCommentById(expectedComment.getId())).thenReturn(Optional.of(expectedComment));
 
-        String uri = "/comments/edit?comment_id=" + expectedComment.getId();
+        String uri = "/comments/" + expectedComment.getId();
         MvcResult result = mvc.perform(get(uri))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("comment"))
@@ -74,7 +74,7 @@ class CommentControllerTest {
         CommentDto nonExistingComment = new CommentDto(0, null, 0);
         when(commentService.findCommentById(nonExistingComment.getId())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> mvc.perform(get("/comments/edit?comment_id=" + nonExistingComment.getId())))
+        assertThatThrownBy(() -> mvc.perform(get("/comments/" + nonExistingComment.getId())))
                 .matches(e -> e.getCause() instanceof EntityNotFoundException);
     }
 
@@ -83,10 +83,9 @@ class CommentControllerTest {
         CommentDto comment = getComments().getFirst();
         CommentDto expectedComment = new CommentDto(comment.getId(), "New text", comment.getBookId());
 
-        String uri = UriBuilder.fromStringUri("/comments/edit")
-                .queryParam("comment_id", expectedComment.getBookId())
-                .queryParam("comment_text", expectedComment.getText())
-                .queryParam("book_id", expectedComment.getBookId())
+        String uri = UriBuilder.fromStringUri("/comments/" + expectedComment.getBookId())
+                .queryParam("comment", expectedComment.getText())
+                .queryParam("bookId", expectedComment.getBookId())
                 .build();
 
         mvc.perform(post(uri))
@@ -101,9 +100,9 @@ class CommentControllerTest {
     void shouldCreateComment() throws Exception {
         CommentDto newComment = new CommentDto(0, "New text", 3);
 
-        String uri = UriBuilder.fromStringUri("/comments/new")
-                .queryParam("comment_text", newComment.getText())
-                .queryParam("book_id", newComment.getBookId())
+        String uri = UriBuilder.fromStringUri("/comments")
+                .queryParam("comment", newComment.getText())
+                .queryParam("bookId", newComment.getBookId())
                 .build();
         mvc.perform(post(uri))
                 .andExpect(status().is3xxRedirection())

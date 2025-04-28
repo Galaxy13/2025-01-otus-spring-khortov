@@ -6,9 +6,7 @@
     <link th:href="@{/css/book_edit.css}" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-<form th:action="@{/books/edit}" method="post">
-    <input type="hidden" name="id" th:value="${book.id}"/>
-
+<form th:action="@{/books/{id}(id=${book.id})}" method="post">
     <label for="id">ID</label>
     <input disabled type="text" id="id" th:value="${book.id}"/>
 

@@ -1,20 +1,21 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.AuthorDto;
-import com.galaxy13.hw.dto.BookDto;
-import com.galaxy13.hw.dto.GenreDto;
-import com.galaxy13.hw.exception.EntityNotFoundException;
+import com.galaxy13.hw.dto.service.AuthorDto;
+import com.galaxy13.hw.dto.service.BookDto;
+import com.galaxy13.hw.dto.mvc.BookModelDto;
+import com.galaxy13.hw.dto.service.GenreDto;
 import com.galaxy13.hw.service.AuthorService;
 import com.galaxy13.hw.service.BookService;
 import com.galaxy13.hw.service.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
-import java.util.HashSet;
 import java.util.List;
 
 @Controller
@@ -41,10 +42,9 @@ public class BookController {
         return "book_storage";
     }
 
-    @GetMapping("/books/edit")
-    public String editBook(@RequestParam("id") long id, Model model) {
-        BookDto book = bookService.findById(id).orElseThrow(() ->
-                new EntityNotFoundException("Book with id %d not found".formatted(id)));
+    @GetMapping("/books/{bookId}")
+    public String editBook(@PathVariable("bookId") long id, Model model) {
+        BookDto book = bookService.findById(id);
         List<AuthorDto> authors = authorService.findAllAuthors();
         List<GenreDto> genres = genreService.findAllGenres();
         model.addAttribute("book", book);
@@ -62,26 +62,22 @@ public class BookController {
         return "book_new";
     }
 
-    @PostMapping("/books/delete")
-    public String deleteBook(@RequestParam("id") long id) {
+    @PostMapping("/books/{bookId}/delete")
+    public String deleteBook(@PathVariable("bookId") long id) {
         bookService.deleteById(id);
         return REDIRECT;
     }
 
-    @PostMapping("/books/edit")
-    public String updateBook(@RequestParam("id") long id,
-                             @RequestParam("title") String title,
-                             @RequestParam("authorId") long authorId,
-                             @RequestParam("genreIds") List<Long> genreIds) {
-        bookService.update(id, title, authorId, new HashSet<>(genreIds));
+    @PostMapping("/books/{bookId}")
+    public String updateBook(@PathVariable("bookId") long id,
+                             @Validated @ModelAttribute("book") BookModelDto updateBook) {
+        bookService.update(id, updateBook);
         return REDIRECT;
     }
 
-    @PostMapping("/books/new")
-    public String newBook(@RequestParam("title") String title,
-                          @RequestParam("authorId") long authorId,
-                          @RequestParam("genreIds") List<Long> genreIds) {
-        bookService.insert(title, authorId, new HashSet<>(genreIds));
+    @PostMapping("/books")
+    public String newBook(@Validated @ModelAttribute("book") BookModelDto newBook) {
+        bookService.insert(newBook);
         return REDIRECT;
     }
 }

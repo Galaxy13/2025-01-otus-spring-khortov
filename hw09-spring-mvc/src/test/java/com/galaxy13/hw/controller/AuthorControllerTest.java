@@ -1,6 +1,7 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.AuthorDto;
+import com.galaxy13.hw.dto.mvc.AuthorModelDto;
+import com.galaxy13.hw.dto.service.AuthorDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.helper.UriBuilder;
 import com.galaxy13.hw.service.AuthorService;
@@ -12,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.galaxy13.hw.helper.TestData.getAuthors;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -54,9 +54,9 @@ class AuthorControllerTest {
     void shouldReturnEditViewForAuthor() throws Exception {
         AuthorDto author = getAuthors().getFirst();
         AuthorDto expectedAuthor = new AuthorDto(author.getId(), "New Name", "New Surname");
-        when(authorService.findAuthorById(author.getId())).thenReturn(Optional.of(expectedAuthor));
+        when(authorService.findAuthorById(author.getId())).thenReturn(expectedAuthor);
 
-        MvcResult result = mvc.perform(get("/authors/edit?id=" + expectedAuthor.getId()))
+        MvcResult result = mvc.perform(get("/authors/" + expectedAuthor.getId()))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("author"))
                 .andExpect(view().name("author_edit"))
@@ -71,8 +71,7 @@ class AuthorControllerTest {
         AuthorDto author = getAuthors().getFirst();
         AuthorDto expectedAuthor = new AuthorDto(author.getId(), "New Name", "New Surname");
 
-        String uri = UriBuilder.fromStringUri("/authors/edit")
-                        .queryParam("id", expectedAuthor.getId())
+        String uri = UriBuilder.fromStringUri("/authors/" + expectedAuthor.getId())
                         .queryParam("firstName", expectedAuthor.getFirstName())
                         .queryParam("lastName", expectedAuthor.getLastName()).build();
 
@@ -81,14 +80,15 @@ class AuthorControllerTest {
                 .andExpect(view().name("redirect:/authors"));
 
         verify(authorService, times(1))
-                .saveAuthor(expectedAuthor.getId(), expectedAuthor.getFirstName(), expectedAuthor.getLastName());
+                .update(expectedAuthor.getId(), new AuthorModelDto(expectedAuthor.getFirstName(),
+                        expectedAuthor.getLastName()));
     }
 
     @Test
     void shouldSaveNewAuthor() throws Exception {
         AuthorDto author = new AuthorDto(0, "New Name", "New Surname");
 
-        String uri = UriBuilder.fromStringUri("/authors/new")
+        String uri = UriBuilder.fromStringUri("/authors")
                 .queryParam("firstName", author.getFirstName())
                 .queryParam("lastName", author.getLastName())
                 .build();
@@ -97,14 +97,16 @@ class AuthorControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/authors"));
 
-        verify(authorService, times(1)).saveAuthor(author.getId(),
-                author.getFirstName(), author.getLastName());
+        verify(authorService, times(1)).insert(
+                new AuthorModelDto(author.getFirstName(), author.getLastName()));
     }
 
     @Test
     void shouldThrowExceptionOnEditNonExistingAuthor() {
         AuthorDto nonExistingAuthor = new AuthorDto(0, null ,null);
-        assertThatThrownBy(() -> mvc.perform(get("/authors/edit?id=" + nonExistingAuthor.getId())))
+        when(authorService.findAuthorById(nonExistingAuthor.getId()))
+        .thenThrow(EntityNotFoundException.class);
+        assertThatThrownBy(() -> mvc.perform(get("/authors/" + nonExistingAuthor.getId())))
                 .matches(e -> e.getCause() instanceof EntityNotFoundException);
     }
 }

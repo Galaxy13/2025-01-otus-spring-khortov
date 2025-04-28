@@ -23,11 +23,10 @@
                 <td th:text="${book.author.firstName} + ' ' + ${book.author.lastName}">Достоевский</td>
                 <td th:text="${#strings.listJoin(book.genres.![name], ', ')}">Драма</td>
                 <td>
-                    <form method="post" th:action="@{/books/delete(id=${book.id})}">
+                    <form method="post" th:action="@{/books/{id}/delete(id=${book.id})}">
                         <button type="submit" name="submit" value="value" class="link-button">Удалить</button>
                     </form>
-                    <form th:action="@{/books/edit}" method="get">
-                        <input type="hidden" name="id" th:value="${book.id}">
+                    <form th:action="@{/books/{id}(id=${book.id})}" method="get">
                         <button type="submit" class="link-button">Редактировать</button>
                     </form>
                     <form th:action="@{/comments}" method="get">

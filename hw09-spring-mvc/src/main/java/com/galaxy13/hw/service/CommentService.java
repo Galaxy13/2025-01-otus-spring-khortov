@@ -1,6 +1,6 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.dto.service.CommentDto;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,6 +1,7 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.BookDto;
+import com.galaxy13.hw.dto.service.BookDto;
+import com.galaxy13.hw.dto.mvc.BookModelDto;
 import com.galaxy13.hw.model.Author;
 import com.galaxy13.hw.model.Genre;
 import com.galaxy13.hw.repository.AuthorRepository;
@@ -32,35 +33,40 @@ public class BookServiceImpl implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public Optional<BookDto> findById(long id) {
+    public BookDto findById(long id) {
         Optional<Book> book = bookRepository.findById(id);
-        return book.map(bookDtoMapper::convert);
+        return book.map(bookDtoMapper::convert).orElseThrow(() ->
+                new EntityNotFoundException("Book with id %d found".formatted(id)));
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<BookDto> findAll() {
-        return bookRepository.findAll().stream().map(bookDtoMapper::convert).toList();
+        return bookRepository.findAllByOrderByIdAsc().stream().map(bookDtoMapper::convert).toList();
     }
 
     @Transactional
     @Override
-    public BookDto insert(String title, long authorId, Set<Long> genreIds) {
+    public BookDto insert(BookModelDto newBook) {
         Book insertBook = new Book();
-        setAllBookFields(insertBook, title, findAuthorById(authorId), findGenreByIds(genreIds));
+        insertBook.setTitle(newBook.title());
+        insertBook.setAuthor(findAuthorById(newBook.authorId()));
+        insertBook.setGenres(findGenreByIds(newBook.genreIds()));
         return bookDtoMapper.convert(bookRepository.save(insertBook));
     }
 
     @Transactional
     @Override
-    public BookDto update(long id, String title, long authorId, Set<Long> genreIds) {
-        Book book = bookRepository.findById(id)
+    public BookDto update(long bookId, BookModelDto updateBook) {
+        Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new EntityNotFoundException("Book not found"));
 
-        Author author = findAuthorById(authorId);
-        List<Genre> genres = findGenreByIds(genreIds);
+        Author author = findAuthorById(updateBook.authorId());
+        List<Genre> genres = findGenreByIds(updateBook.genreIds());
 
-        setAllBookFields(book, title, author, genres);
+        book.setTitle(updateBook.title());
+        book.setAuthor(author);
+        book.setGenres(genres);
 
         return bookDtoMapper.convert(book);
     }
@@ -86,11 +92,5 @@ public class BookServiceImpl implements BookService {
             throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genreIds));
         }
         return genres;
-    }
-
-    private void setAllBookFields(Book book, String title, Author author, List<Genre> genreIds) {
-        book.setTitle(title);
-        book.setAuthor(author);
-        book.setGenres(genreIds);
     }
 }

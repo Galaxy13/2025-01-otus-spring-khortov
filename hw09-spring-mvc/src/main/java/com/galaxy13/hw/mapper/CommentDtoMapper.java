@@ -1,6 +1,6 @@
 package com.galaxy13.hw.mapper;
 
-import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.dto.service.CommentDto;
 import com.galaxy13.hw.model.Comment;
 import org.springframework.stereotype.Component;
 import org.springframework.core.convert.converter.Converter;

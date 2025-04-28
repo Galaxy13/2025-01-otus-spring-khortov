@@ -1,6 +1,6 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.dto.service.CommentDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Comment;

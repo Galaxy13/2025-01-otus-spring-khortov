@@ -1,8 +1,8 @@
 package com.galaxy13.hw.mapper;
 
-import com.galaxy13.hw.dto.AuthorDto;
-import com.galaxy13.hw.dto.BookDto;
-import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.service.AuthorDto;
+import com.galaxy13.hw.dto.service.BookDto;
+import com.galaxy13.hw.dto.service.GenreDto;
 import com.galaxy13.hw.model.Book;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

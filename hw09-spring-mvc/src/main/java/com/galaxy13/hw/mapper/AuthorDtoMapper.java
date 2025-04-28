@@ -1,6 +1,6 @@
 package com.galaxy13.hw.mapper;
 
-import com.galaxy13.hw.dto.AuthorDto;
+import com.galaxy13.hw.dto.service.AuthorDto;
 import com.galaxy13.hw.model.Author;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;

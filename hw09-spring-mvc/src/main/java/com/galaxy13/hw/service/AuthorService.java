@@ -1,14 +1,16 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.AuthorDto;
+import com.galaxy13.hw.dto.mvc.AuthorModelDto;
+import com.galaxy13.hw.dto.service.AuthorDto;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface AuthorService {
     List<AuthorDto> findAllAuthors();
 
-    Optional<AuthorDto> findAuthorById(long id);
+    AuthorDto findAuthorById(long id);
 
-    AuthorDto saveAuthor(long id, String firstName, String lastName);
+    AuthorDto insert(AuthorModelDto newAuthor);
+
+    AuthorDto update(long id, AuthorModelDto updatedAuthor);
 }
