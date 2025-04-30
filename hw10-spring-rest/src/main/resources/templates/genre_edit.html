@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <title>Редактирование жанра</title>
+    <meta charset="UTF-8"/>
+    <link th:href="@{/css/author_genre_edit.css}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<h2>Редактирование:</h2>
+<form method="post" th:action="@{/genres/{id}(id=${genre.id})}">
+
+    <label for="name">Имя</label>
+    <input name="name" id="name" th:value="${genre.name}" value="Фантастика">
+
+    <button type="submit" class="link-button">Сохранить</button>
+</form>
+</body>
+</html>

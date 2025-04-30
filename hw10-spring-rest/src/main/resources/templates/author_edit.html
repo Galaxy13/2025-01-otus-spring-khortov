@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <title>Редактирование автора</title>
+    <meta charset="UTF-8"/>
+    <link th:href="@{/css/author_genre_edit.css}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<h2>Редактирование:</h2>
+<form method="post" th:action="@{/authors/{id}(id=${author.id})}">
+    <label for="firstName">Имя</label>
+    <input name="firstName" id="firstName" th:value="${author.firstName}" value="Фёдор" required>
+
+    <label for="lastName">Фамилия</label>
+    <input name="lastName" id="lastName" th:value="${author.lastName}" value="Достоевский">
+
+    <button type="submit" class="link-button">Сохранить</button>
+</form>
+</body>
+</html>
