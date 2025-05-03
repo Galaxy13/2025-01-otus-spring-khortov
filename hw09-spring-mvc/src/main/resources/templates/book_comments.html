@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+    <head>
+        <title>Комментарии</title>
+        <meta charset="UTF-8"/>
+        <link th:href="@{/css/book_comments.css}" rel="stylesheet" type="text/css"/>
+    </head>
+    <body>
+    <h1>Комментарии</h1>
+    <ol id="comments">
+        <li th:each="comment : ${comments}" class="comment-item">
+            <span th:text="${comment.text}"></span>
+            <form th:action="@{/comments/{id}(id=${comment.id})}" method="get">
+                <button type="submit" class="link-button">Редактировать</button>
+            </form>
+        </li>
+    </ol>
+
+    <form th:action="@{/comments}" method="post">
+        <input type="hidden" name="bookId" th:value="${comments[0].bookId}"/>
+
+        <label for="text">Новый комментарий</label>
+        <input name="comment" id="text" required/>
+        <button type="submit" class="link-button">Сохранить</button>
+    </form>
+    <form th:action="@{/books}" method="get">
+        <button type="submit">К книгам</button>
+    </form>
+    </body>
+</html>
