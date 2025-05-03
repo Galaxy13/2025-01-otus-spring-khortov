@@ -3,9 +3,10 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
 
 plugins {
     id("java")
-    id("name.remal.sonarlint") version "5.1.3"
+    id("name.remal.sonarlint") version "5.1.10"
     id("org.springframework.boot") version "3.4.3"
     id("io.spring.dependency-management") version "1.1.7"
+    id("com.github.node-gradle.node") version "7.0.2"
     checkstyle
 }
 
@@ -48,8 +49,40 @@ configure<SonarLintExtension> {
         detectNodeJs = false
         logNodeJsNotFound = false
     }
+    languages {
+        include("JavaScript")
+    }
+    sonarProperty("sonar.sources", "src/main/java,src/test/java,src/ui")
+    sonarProperty("sonar.exclusions", "**/generated/**,**/build/**,**/node_modules/**")
+    sonarProperty("sonar.javascript.file.suffixes", ".js, .vue")
 }
 
 tasks.test {
     useJUnitPlatform()
+}
+
+val viteBuild = tasks.register<com.github.gradle.node.npm.task.NpmTask>("viteBuild") {
+    dependsOn(tasks.npmInstall)
+    workingDir.set(file("src/ui"))
+    environment = mapOf(
+        "NODE_ENV" to "production",
+        "FORCE_COLOR" to "true",
+        "LANG" to "en_US.UTF-8"  // Add this line
+    )
+    npmCommand.set(listOf("run", "build"))
+    inputs.dir("$projectDir/src/ui/")
+    outputs.dir("$projectDir/src/main/resources/static")
+}
+
+tasks.named<com.github.gradle.node.npm.task.NpmInstallTask>("npmInstall") {
+    workingDir.set(file("src/ui"))
+}
+
+node {
+    download = true
+    version = "22.15.0"
+}
+
+tasks.processResources {
+    dependsOn(viteBuild)
 }

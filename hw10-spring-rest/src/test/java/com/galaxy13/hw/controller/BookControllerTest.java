@@ -47,7 +47,7 @@ class BookControllerTest {
         List<BookResponseDto> expectedBooks = getBooks();
         when(bookService.findAll()).thenReturn(expectedBooks);
 
-        mvc.perform(get("/book"))
+        mvc.perform(get("/api/v1/book"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedBooks)));
     }
@@ -57,7 +57,7 @@ class BookControllerTest {
         BookResponseDto expectedBook = getBooks().getFirst();
         when(bookService.findById(expectedBook.getId())).thenReturn(expectedBook);
 
-        mvc.perform(get("/book/" + expectedBook.getId()))
+        mvc.perform(get("/api/v1/book/" + expectedBook.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedBook)));
     }
@@ -77,7 +77,7 @@ class BookControllerTest {
                 .thenReturn(expectedBook);
 
 
-        mvc.perform(put("/book/" + book.getId())
+        mvc.perform(put("/api/v1/book/" + book.getId())
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
                         .andExpect(status().isOk())
@@ -95,7 +95,7 @@ class BookControllerTest {
         BookRequestDto requestDto = new BookRequestDto("New Title", 1L, Set.of(1L, 2L));
         when(bookService.insert(requestDto)).thenReturn(newBook);
 
-        mvc.perform(post("/book")
+        mvc.perform(post("/api/v1/book")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
@@ -108,7 +108,7 @@ class BookControllerTest {
     void shouldDeleteBook() throws Exception {
         BookResponseDto bookToDelete = getBooks().getFirst();
 
-        String uri = "/book/" + bookToDelete.getId();
+        String uri = "/api/v1/book/" + bookToDelete.getId();
         mvc.perform(delete(uri))
                 .andExpect(status().isOk());
         Mockito.verify(bookService, Mockito.times(1)).deleteById(bookToDelete.getId());
@@ -118,7 +118,7 @@ class BookControllerTest {
     void shouldThrowExceptionWhenBookNotFoundOnEdit() {
         when(bookService.findById(-1L)).thenThrow(EntityNotFoundException.class);
 
-        assertThatThrownBy(() -> mvc.perform(get("/book/" + -1L)))
+        assertThatThrownBy(() -> mvc.perform(get("/api/v1/book/" + -1L)))
                 .matches(e -> e.getCause() instanceof EntityNotFoundException);
     }
 

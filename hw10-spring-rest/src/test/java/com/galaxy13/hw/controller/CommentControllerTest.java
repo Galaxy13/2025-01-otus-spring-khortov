@@ -43,7 +43,7 @@ class CommentControllerTest {
         List<CommentResponseDto> expectedComments = bookIdToCommentMap().get(1L);
         when(commentService.findCommentByBookId(1L)).thenReturn(expectedComments);
 
-        mvc.perform(get("/comment?book_id=" + 1L))
+        mvc.perform(get("/api/v1/comment?book_id=" + 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedComments)));
     }
@@ -53,7 +53,7 @@ class CommentControllerTest {
         CommentResponseDto expectedComment = getComments().getFirst();
         when(commentService.findCommentById(expectedComment.getId())).thenReturn(expectedComment);
 
-        String uri = "/comment/" + expectedComment.getId();
+        String uri = "/api/v1/comment/" + expectedComment.getId();
         mvc.perform(get(uri))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedComment)))
@@ -65,7 +65,7 @@ class CommentControllerTest {
         CommentResponseDto nonExistingComment = new CommentResponseDto(0, null, 0);
         when(commentService.findCommentById(nonExistingComment.getId())).thenThrow(EntityNotFoundException.class);
 
-        assertThatThrownBy(() -> mvc.perform(get("/comment/" + nonExistingComment.getId())))
+        assertThatThrownBy(() -> mvc.perform(get("/api/v1/comment/" + nonExistingComment.getId())))
                 .matches(e -> e.getCause() instanceof EntityNotFoundException);
     }
 
@@ -78,7 +78,7 @@ class CommentControllerTest {
         CommentRequestDto requestDto = new CommentRequestDto(expectedComment.getText(), expectedComment.getBookId());
         when(commentService.update(expectedComment.getId(), requestDto)).thenReturn(expectedComment);
 
-        String uri = "/comment/" + comment.getId();
+        String uri = "/api/v1/comment/" + comment.getId();
 
         mvc.perform(put(uri).contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
@@ -95,7 +95,7 @@ class CommentControllerTest {
         CommentResponseDto expected = new CommentResponseDto(8, "New text", 3);
         when(commentService.create(requestDto)).thenReturn(expected);
 
-        String uri = "/comment";
+        String uri = "/api/v1/comment";
         mvc.perform(post(uri).contentType("application/json").content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expected)));

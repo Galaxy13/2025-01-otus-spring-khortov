@@ -40,7 +40,7 @@ class AuthorControllerTest {
     void shouldReturnAllAuthors() throws Exception {
         when(authorService.findAllAuthors()).thenReturn(getAuthors());
 
-        mvc.perform(get("/author").accept("application/json"))
+        mvc.perform(get("/api/v1/author").accept("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(getAuthors())))
                 .andReturn();
@@ -52,7 +52,7 @@ class AuthorControllerTest {
         AuthorResponseDto expectedAuthor = new AuthorResponseDto(author.getId(), "New Name", "New Surname");
         when(authorService.findAuthorById(author.getId())).thenReturn(expectedAuthor);
 
-        mvc.perform(get("/author/" + expectedAuthor.getId()).accept("application/json"))
+        mvc.perform(get("/api/v1/author/" + expectedAuthor.getId()).accept("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedAuthor)))
                 .andReturn();
@@ -67,7 +67,7 @@ class AuthorControllerTest {
                 new AuthorRequestDto(expectedAuthor.getFirstName(), expectedAuthor.getLastName());
         when(authorService.update(expectedAuthor.getId(), requestDto)).thenReturn(expectedAuthor);
 
-        mvc.perform(put("/author/" + expectedAuthor.getId())
+        mvc.perform(put("/api/v1/author/" + expectedAuthor.getId())
                         .accept("application/json")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
@@ -84,7 +84,7 @@ class AuthorControllerTest {
         AuthorRequestDto requestDto = new AuthorRequestDto("New Name", "New Surname");
         when(authorService.insert(requestDto)).thenReturn(expectedAuthor);
 
-        String uri = "/author";
+        String uri = "/api/v1/author";
 
         mvc.perform(post(uri).accept("application/json")
                         .contentType("application/json")
@@ -103,7 +103,7 @@ class AuthorControllerTest {
         when(authorService.update(nonExistingAuthor.getId(), requestDto))
         .thenThrow(EntityNotFoundException.class);
         assertThatThrownBy(() ->
-                mvc.perform(put("/author/" + nonExistingAuthor.getId())
+                mvc.perform(put("/api/v1/author/" + nonExistingAuthor.getId())
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto))))
                 .matches(e -> e.getCause() instanceof EntityNotFoundException);
