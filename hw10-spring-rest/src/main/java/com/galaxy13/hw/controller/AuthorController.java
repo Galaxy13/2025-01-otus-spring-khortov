@@ -4,6 +4,8 @@ import com.galaxy13.hw.dto.request.AuthorRequestDto;
 import com.galaxy13.hw.dto.response.AuthorResponseDto;
 import com.galaxy13.hw.service.AuthorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,33 +19,30 @@ import java.util.Comparator;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/author")
 @RequiredArgsConstructor
 public class AuthorController {
 
     private final AuthorService authorService;
 
-    @GetMapping("/author")
+    @GetMapping("/")
     public List<AuthorResponseDto> authors() {
-        return authorService.findAllAuthors()
-                .stream()
-                .sorted(Comparator.comparingLong(AuthorResponseDto::getId))
-                .toList();
+        return authorService.findAllAuthors();
     }
 
-    @GetMapping("/author/{authorId}")
+    @GetMapping("/{authorId}")
     public AuthorResponseDto getAuthor(@PathVariable("authorId") long id) {
         return authorService.findAuthorById(id);
     }
 
-    @PutMapping("/author/{authorId}")
+    @PutMapping("/{authorId}")
     public AuthorResponseDto editAuthor(@PathVariable("authorId") long id,
                                         @Validated @RequestBody AuthorRequestDto authorDto) {
         return authorService.update(id, authorDto);
     }
 
-    @PostMapping("/author")
-    public AuthorResponseDto newAuthor(@Validated @RequestBody AuthorRequestDto authorDto) {
-        return authorService.insert(authorDto);
+    @PostMapping("/")
+    public ResponseEntity<AuthorResponseDto> newAuthor(@Validated @RequestBody AuthorRequestDto authorDto) {
+        return new ResponseEntity<>(authorService.insert(authorDto), HttpStatus.CREATED);
     }
 }

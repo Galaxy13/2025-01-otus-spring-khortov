@@ -22,7 +22,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     @Override
     public List<AuthorResponseDto> findAllAuthors() {
-        return authorRepository.findAll().stream().map(authorDtoMapper::convert).toList();
+        return authorRepository.findAllByOrderByIdAsc().stream().map(authorDtoMapper::convert).toList();
     }
 
     @Transactional(readOnly = true)

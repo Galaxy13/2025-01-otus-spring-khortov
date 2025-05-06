@@ -66,7 +66,7 @@ val viteBuild = tasks.register<com.github.gradle.node.npm.task.NpmTask>("viteBui
     environment = mapOf(
         "NODE_ENV" to "production",
         "FORCE_COLOR" to "true",
-        "LANG" to "en_US.UTF-8"  // Add this line
+        "LANG" to "en_US.UTF-8"
     )
     npmCommand.set(listOf("run", "build"))
     inputs.dir("$projectDir/src/ui/")
