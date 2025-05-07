@@ -1,8 +1,8 @@
 package com.galaxy13.hw.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.galaxy13.hw.dto.request.CommentRequestDto;
-import com.galaxy13.hw.dto.response.CommentResponseDto;
+import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.dto.upsert.CommentUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.service.CommentService;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ class CommentControllerTest {
 
     @Test
     void shouldReturnCommentsForBook() throws Exception {
-        List<CommentResponseDto> expectedComments = bookIdToCommentMap().get(1L);
+        List<CommentDto> expectedComments = bookIdToCommentMap().get(1L);
         when(commentService.findCommentByBookId(1L)).thenReturn(expectedComments);
 
         mvc.perform(get("/api/v1/comment?book_id=" + 1L))
@@ -50,10 +50,10 @@ class CommentControllerTest {
 
     @Test
     void shouldReturnCommentById() throws Exception {
-        CommentResponseDto expectedComment = getComments().getFirst();
-        when(commentService.findCommentById(expectedComment.getId())).thenReturn(expectedComment);
+        CommentDto expectedComment = getComments().getFirst();
+        when(commentService.findCommentById(expectedComment.id())).thenReturn(expectedComment);
 
-        String uri = "/api/v1/comment/" + expectedComment.getId();
+        String uri = "/api/v1/comment/" + expectedComment.id();
         mvc.perform(get(uri))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedComment)))
@@ -62,23 +62,24 @@ class CommentControllerTest {
 
     @Test
     void shouldThrowExceptionWhenCommentNotFound() {
-        CommentResponseDto nonExistingComment = new CommentResponseDto(0, null, 0);
-        when(commentService.findCommentById(nonExistingComment.getId())).thenThrow(EntityNotFoundException.class);
+        CommentDto nonExistingComment = new CommentDto(0, null, 0);
+        when(commentService.findCommentById(nonExistingComment.id())).thenThrow(EntityNotFoundException.class);
 
-        assertThatThrownBy(() -> mvc.perform(get("/api/v1/comment/" + nonExistingComment.getId())))
+        assertThatThrownBy(() -> mvc.perform(get("/api/v1/comment/" + nonExistingComment.id())))
                 .matches(e -> e.getCause() instanceof EntityNotFoundException);
     }
 
     @Test
     void shouldEditComment() throws Exception {
-        CommentResponseDto comment = getComments().getFirst();
-        CommentResponseDto expectedComment = new CommentResponseDto(comment.getId(),
+        CommentDto comment = getComments().getFirst();
+        CommentDto expectedComment = new CommentDto(comment.id(),
                 "New text",
-                comment.getBookId());
-        CommentRequestDto requestDto = new CommentRequestDto(expectedComment.getText(), expectedComment.getBookId());
-        when(commentService.update(expectedComment.getId(), requestDto)).thenReturn(expectedComment);
+                comment.bookId());
+        CommentUpsertDto requestDto = new CommentUpsertDto(expectedComment.id(),
+                expectedComment.text(), expectedComment.bookId());
+        when(commentService.update(requestDto)).thenReturn(expectedComment);
 
-        String uri = "/api/v1/comment/" + comment.getId();
+        String uri = "/api/v1/comment/" + comment.id();
 
         mvc.perform(put(uri).contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
@@ -86,13 +87,13 @@ class CommentControllerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedComment)));
 
         verify(commentService, times(1))
-                .update(expectedComment.getId(), requestDto);
+                .update(requestDto);
     }
 
     @Test
     void shouldCreateComment() throws Exception {
-        CommentRequestDto requestDto = new CommentRequestDto("New text", 3);
-        CommentResponseDto expected = new CommentResponseDto(8, "New text", 3);
+        CommentUpsertDto requestDto = new CommentUpsertDto(0L, "New text", 3L);
+        CommentDto expected = new CommentDto(8, "New text", 3);
         when(commentService.create(requestDto)).thenReturn(expected);
 
         String uri = "/api/v1/comment";

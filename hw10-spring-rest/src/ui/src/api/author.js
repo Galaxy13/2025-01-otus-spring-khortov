@@ -16,8 +16,8 @@ export default {
         return handleResponse(response);
     },
 
-    async updateAuthor(id, author) {
-        const response = await fetch(`${BASE_URL}author/${id}`, {
+    async updateAuthor(author) {
+        const response = await fetch(`${BASE_URL}author/${author.id}`, {
             method: 'PUT',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify(author),

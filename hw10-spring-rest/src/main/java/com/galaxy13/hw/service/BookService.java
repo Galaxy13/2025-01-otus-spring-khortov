@@ -1,18 +1,18 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.response.BookResponseDto;
-import com.galaxy13.hw.dto.request.BookRequestDto;
+import com.galaxy13.hw.dto.BookDto;
+import com.galaxy13.hw.dto.upsert.BookUpsertDto;
 
 import java.util.List;
 
 public interface BookService {
-    BookResponseDto findById(long id);
+    BookDto findById(long id);
 
-    List<BookResponseDto> findAll();
+    List<BookDto> findAll();
 
-    BookResponseDto insert(BookRequestDto newBook);
+    BookDto create(BookUpsertDto newBook);
 
-    BookResponseDto update(long bookId, BookRequestDto updateBook);
+    BookDto update(BookUpsertDto updateBook);
 
     void deleteById(long id);
 }

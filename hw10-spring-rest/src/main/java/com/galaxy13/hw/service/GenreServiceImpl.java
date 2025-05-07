@@ -1,7 +1,7 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.request.GenreRequestDto;
-import com.galaxy13.hw.dto.response.GenreResponseDto;
+import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.upsert.GenreUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.repository.GenreRepository;
 import com.galaxy13.hw.model.Genre;
@@ -17,24 +17,25 @@ import java.util.List;
 public class GenreServiceImpl implements GenreService {
     private final GenreRepository genreRepository;
 
-    private final Converter<Genre, GenreResponseDto> genreDtoMapper;
+    private final Converter<Genre, GenreDto> genreDtoMapper;
 
     @Transactional(readOnly = true)
     @Override
-    public List<GenreResponseDto> findAllGenres() {
+    public List<GenreDto> findAllGenres() {
         return genreRepository.findAll().stream().map(genreDtoMapper::convert).toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public GenreResponseDto findGenreById(long id) {
+    public GenreDto findGenreById(long id) {
         return genreRepository.findById(id).map(genreDtoMapper::convert).orElseThrow(() ->
                 new EntityNotFoundException("Genre with id %d not found".formatted(id)));
     }
 
     @Transactional
     @Override
-    public GenreResponseDto update(long id, GenreRequestDto genreDto) {
+    public GenreDto update(GenreUpsertDto genreDto) {
+        long id = genreDto.id();
         Genre genre = genreRepository.findById(id).orElseThrow(() ->
                 new EntityNotFoundException("Genre with id %d to update not exist".formatted(id)));
         genre.setName(genreDto.name());
@@ -43,7 +44,7 @@ public class GenreServiceImpl implements GenreService {
 
     @Transactional
     @Override
-    public GenreResponseDto insert(GenreRequestDto genreDto) {
+    public GenreDto create(GenreUpsertDto genreDto) {
         Genre genre = new Genre();
         genre.setName(genreDto.name());
         return genreDtoMapper.convert(genreRepository.save(genre));

@@ -1,16 +1,16 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.request.AuthorRequestDto;
-import com.galaxy13.hw.dto.response.AuthorResponseDto;
+import com.galaxy13.hw.dto.AuthorDto;
+import com.galaxy13.hw.dto.upsert.AuthorUpsertDto;
 
 import java.util.List;
 
 public interface AuthorService {
-    List<AuthorResponseDto> findAllAuthors();
+    List<AuthorDto> findAllAuthors();
 
-    AuthorResponseDto findAuthorById(long id);
+    AuthorDto findAuthorById(long id);
 
-    AuthorResponseDto insert(AuthorRequestDto newAuthor);
+    AuthorDto create(AuthorUpsertDto newAuthor);
 
-    AuthorResponseDto update(long id, AuthorRequestDto updatedAuthor);
+    AuthorDto update(AuthorUpsertDto updatedAuthor);
 }

@@ -45,7 +45,7 @@ watch(() => props.genre, (newGenre) => {
 
 const save = () => {
   emit('save', {
-    id: localGenre.value.id || null,
+    id: localGenre.value.id || 0,
     name: localGenre.value.name
   });
 };

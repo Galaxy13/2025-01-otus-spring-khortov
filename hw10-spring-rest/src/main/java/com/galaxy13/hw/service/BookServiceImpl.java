@@ -1,7 +1,7 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.response.BookResponseDto;
-import com.galaxy13.hw.dto.request.BookRequestDto;
+import com.galaxy13.hw.dto.BookDto;
+import com.galaxy13.hw.dto.upsert.BookUpsertDto;
 import com.galaxy13.hw.model.Author;
 import com.galaxy13.hw.model.Genre;
 import com.galaxy13.hw.repository.AuthorRepository;
@@ -29,11 +29,11 @@ public class BookServiceImpl implements BookService {
 
     private final GenreRepository genreRepository;
 
-    private final Converter<Book, BookResponseDto> bookDtoMapper;
+    private final Converter<Book, BookDto> bookDtoMapper;
 
     @Transactional(readOnly = true)
     @Override
-    public BookResponseDto findById(long id) {
+    public BookDto findById(long id) {
         Optional<Book> book = bookRepository.findById(id);
         return book.map(bookDtoMapper::convert).orElseThrow(() ->
                 new EntityNotFoundException("Book with id %d found".formatted(id)));
@@ -41,13 +41,13 @@ public class BookServiceImpl implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookResponseDto> findAll() {
+    public List<BookDto> findAll() {
         return bookRepository.findAllByOrderByIdAsc().stream().map(bookDtoMapper::convert).toList();
     }
 
     @Transactional
     @Override
-    public BookResponseDto insert(BookRequestDto newBook) {
+    public BookDto create(BookUpsertDto newBook) {
         Book insertBook = new Book();
         insertBook.setTitle(newBook.title());
         insertBook.setAuthor(findAuthorById(newBook.authorId()));
@@ -57,8 +57,8 @@ public class BookServiceImpl implements BookService {
 
     @Transactional
     @Override
-    public BookResponseDto update(long bookId, BookRequestDto updateBook) {
-        Book book = bookRepository.findById(bookId)
+    public BookDto update(BookUpsertDto updateBook) {
+        Book book = bookRepository.findById(updateBook.id())
                 .orElseThrow(() -> new EntityNotFoundException("Book not found"));
 
         Author author = findAuthorById(updateBook.authorId());

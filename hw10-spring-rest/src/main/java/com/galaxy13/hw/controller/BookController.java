@@ -1,7 +1,8 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.response.BookResponseDto;
-import com.galaxy13.hw.dto.request.BookRequestDto;
+import com.galaxy13.hw.dto.BookDto;
+import com.galaxy13.hw.dto.upsert.BookUpsertDto;
+import com.galaxy13.hw.exception.MismatchedIdsException;
 import com.galaxy13.hw.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,13 +19,13 @@ public class BookController {
 
     private final BookService bookService;
 
-    @GetMapping("/")
-    public List<BookResponseDto> getAllBooks() {
+    @GetMapping
+    public List<BookDto> getAllBooks() {
         return bookService.findAll();
     }
 
     @GetMapping("/{bookId}")
-    public BookResponseDto getBook(@PathVariable("bookId") long id) {
+    public BookDto getBook(@PathVariable("bookId") long id) {
         return bookService.findById(id);
     }
 
@@ -35,13 +36,16 @@ public class BookController {
     }
 
     @PutMapping("/{bookId}")
-    public BookResponseDto updateBook(@PathVariable("bookId") long id,
-                                      @Validated @RequestBody BookRequestDto updateBook) {
-        return bookService.update(id, updateBook);
+    public BookDto updateBook(@PathVariable("bookId") long id,
+                              @Validated @RequestBody BookUpsertDto bookDto) {
+        if (id != bookDto.id()) {
+            throw new MismatchedIdsException(id, bookDto.id());
+        }
+        return bookService.update(bookDto);
     }
 
-    @PostMapping("/")
-    public ResponseEntity<BookResponseDto> newBook(@Validated @RequestBody BookRequestDto newBook) {
-        return new ResponseEntity<>(bookService.insert(newBook), HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<BookDto> newBook(@Validated @RequestBody BookUpsertDto newBook) {
+        return new ResponseEntity<>(bookService.create(newBook), HttpStatus.CREATED);
     }
 }

@@ -1,7 +1,7 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.request.CommentRequestDto;
-import com.galaxy13.hw.dto.response.CommentResponseDto;
+import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.dto.upsert.CommentUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Comment;
@@ -21,39 +21,40 @@ public class CommentServiceImpl implements CommentService {
 
     private final BookRepository bookRepository;
 
-    private final Converter<Comment, CommentResponseDto> commentDtoMapper;
+    private final Converter<Comment, CommentDto> commentDtoMapper;
 
     @Transactional(readOnly = true)
     @Override
-    public List<CommentResponseDto> findCommentByBookId(long id) {
+    public List<CommentDto> findCommentByBookId(long id) {
         return commentRepository.findByBookId(id).stream().map(commentDtoMapper::convert).toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public CommentResponseDto findCommentById(long id) {
+    public CommentDto findCommentById(long id) {
         return commentRepository.findById(id).map(commentDtoMapper::convert).orElseThrow(() ->
                 new EntityNotFoundException("Comment with id %d not found".formatted(id)));
     }
 
     @Transactional
     @Override
-    public CommentResponseDto update(long id, CommentRequestDto commentDto) {
+    public CommentDto update(CommentUpsertDto commentDto) {
+        long id = commentDto.id();
         Comment comment = commentRepository.findById(id).orElseThrow(() ->
                 new EntityNotFoundException("No comment found with id: %d".formatted(id))
         );
-        comment.setText(commentDto.comment());
+        comment.setText(commentDto.text());
         return commentDtoMapper.convert(comment);
     }
 
     @Transactional
     @Override
-    public CommentResponseDto create(CommentRequestDto commentDto) {
+    public CommentDto create(CommentUpsertDto commentDto) {
         Book book = bookRepository.findById(commentDto.bookId()).orElseThrow(
                 () -> new EntityNotFoundException("Book not found"));
         Comment comment = new Comment();
         comment.setBook(book);
-        comment.setText(commentDto.comment());
+        comment.setText(commentDto.text());
         return commentDtoMapper.convert(commentRepository.save(comment));
     }
 }

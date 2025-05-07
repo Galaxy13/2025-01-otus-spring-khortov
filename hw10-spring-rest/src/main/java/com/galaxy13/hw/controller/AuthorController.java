@@ -1,8 +1,10 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.request.AuthorRequestDto;
-import com.galaxy13.hw.dto.response.AuthorResponseDto;
+import com.galaxy13.hw.dto.upsert.AuthorUpsertDto;
+import com.galaxy13.hw.dto.AuthorDto;
+import com.galaxy13.hw.exception.MismatchedIdsException;
 import com.galaxy13.hw.service.AuthorService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -25,24 +26,27 @@ public class AuthorController {
 
     private final AuthorService authorService;
 
-    @GetMapping("/")
-    public List<AuthorResponseDto> authors() {
+    @GetMapping
+    public List<AuthorDto> authors() {
         return authorService.findAllAuthors();
     }
 
     @GetMapping("/{authorId}")
-    public AuthorResponseDto getAuthor(@PathVariable("authorId") long id) {
+    public AuthorDto getAuthor(@PathVariable("authorId") long id) {
         return authorService.findAuthorById(id);
     }
 
     @PutMapping("/{authorId}")
-    public AuthorResponseDto editAuthor(@PathVariable("authorId") long id,
-                                        @Validated @RequestBody AuthorRequestDto authorDto) {
-        return authorService.update(id, authorDto);
+    public AuthorDto editAuthor(@NotNull @PathVariable("authorId") long id,
+                                @Validated @RequestBody AuthorUpsertDto authorDto) {
+        if (authorDto.id() != id){
+            throw new MismatchedIdsException(id, authorDto.id());
+        }
+        return authorService.update(authorDto);
     }
 
-    @PostMapping("/")
-    public ResponseEntity<AuthorResponseDto> newAuthor(@Validated @RequestBody AuthorRequestDto authorDto) {
-        return new ResponseEntity<>(authorService.insert(authorDto), HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<AuthorDto> newAuthor(@Validated @RequestBody AuthorUpsertDto authorDto) {
+        return new ResponseEntity<>(authorService.create(authorDto), HttpStatus.CREATED);
     }
 }

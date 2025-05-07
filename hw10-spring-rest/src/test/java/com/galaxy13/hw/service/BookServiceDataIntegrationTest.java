@@ -1,8 +1,9 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.request.BookRequestDto;
-import com.galaxy13.hw.dto.response.GenreResponseDto;
+import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.upsert.BookUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
+import com.galaxy13.hw.mapper.BookDtoMapper;
 import com.galaxy13.hw.model.Author;
 import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Genre;
@@ -44,6 +45,9 @@ class BookServiceDataIntegrationTest {
     @Autowired
     private BookService bookService;
 
+    @Autowired
+    private BookDtoMapper mapper;
+
     private static List<Book> getBooks(List<Author> authors, List<Genre> genres) {
         return IntStream.range(1, 4).boxed().map(id -> new Book(
                 id,
@@ -72,7 +76,7 @@ class BookServiceDataIntegrationTest {
     @DisplayName("Should find all books")
     @Test
     void shouldFindAllBooks() {
-        var expectedBooks = getBooks();
+        var expectedBooks = getBooks().stream().map(mapper::convert).collect(Collectors.toList());
         var actualBooks = bookService.findAll();
 
         assertThat(actualBooks).usingRecursiveComparison().isEqualTo(expectedBooks);
@@ -82,10 +86,11 @@ class BookServiceDataIntegrationTest {
     @ParameterizedTest
     @MethodSource("getBooks")
     void shouldFindBookById(Book expectedBook) {
+        var expectedDto = mapper.convert(expectedBook);
         var actualBook = bookService.findById(expectedBook.getId());
         assertThat(actualBook)
                 .usingRecursiveComparison()
-                .isEqualTo(expectedBook);
+                .isEqualTo(expectedDto);
     }
 
     @DisplayName("Should not find non-existing book")
@@ -98,14 +103,14 @@ class BookServiceDataIntegrationTest {
 
     @DisplayName("Should insert new book")
     @Test
-    void shouldInsertNewBook() {
-        var newBook = new BookRequestDto("Blade Runner",
+    void shouldCreateNewBook() {
+        var newBook = new BookUpsertDto(0L, "Blade Runner",
                 authors.getFirst().getId(), Set.of(genres.getFirst().getId()));
 
-        var actualBook = bookService.insert(newBook);
+        var actualBook = bookService.create(newBook);
 
         assertThat(actualBook).isNotNull()
-                .matches(book -> book.getId() > 0)
+                .matches(book -> book.id() > 0)
                 .usingRecursiveComparison()
                 .ignoringExpectedNullFields()
                 .ignoringFields("id")
@@ -116,18 +121,18 @@ class BookServiceDataIntegrationTest {
     @Test
     void shouldUpdateExistingBook() {
         var bookIdx = 1L;
-        var updateBook = new BookRequestDto("Blade Runner",
+        var updateBook = new BookUpsertDto(bookIdx, "Blade Runner",
                 authors.getFirst().getId(), Set.of(genres.getFirst().getId()));
-        var actualBook = bookService.update(bookIdx, updateBook);
+        var actualBook = bookService.update(updateBook);
 
         assertThat(actualBook)
                 .isNotNull()
                 .matches(book ->
-                        book.getId() == bookIdx &&
-                        book.getTitle().equals(updateBook.title()) &&
-                        book.getAuthor().getId() == updateBook.authorId() &&
-                        book.getGenres().stream()
-                                .map(GenreResponseDto::getId)
+                        book.id() == bookIdx &&
+                        book.title().equals(updateBook.title()) &&
+                        book.author().id().equals(updateBook.authorId()) &&
+                        book.genres().stream()
+                                .map(GenreDto::id)
                                 .collect(Collectors.toSet())
                                 .equals(updateBook.genreIds()));
     }
@@ -136,28 +141,28 @@ class BookServiceDataIntegrationTest {
     @Test
     void shouldNotUpdateNonExistingBook() {
         var bookIdx = -1L;
-        var updateBook = new BookRequestDto("Blade Runner",
+        var updateBook = new BookUpsertDto(bookIdx, "Blade Runner",
                 authors.getFirst().getId(),
                 Set.of(genres.getFirst().getId()));
-        assertThatThrownBy(() -> bookService.update(bookIdx, updateBook)).isInstanceOf(RuntimeException.class);
+        assertThatThrownBy(() -> bookService.update(updateBook)).isInstanceOf(RuntimeException.class);
     }
 
     @DisplayName("Should not update book to non-existing author or genre")
     @Test
     void shouldNotUpdateNonExistingAuthorOrGenre() {
 
-        var bookIdx = 1;
+        var bookIdx = 1L;
         var nonExistingAuthorBook =
-                new BookRequestDto(
+                new BookUpsertDto(bookIdx,
                         "Blade Runner", -1L, Set.of(genres.getFirst().getId()));
         assertThatThrownBy(() -> bookService
-                .update(bookIdx, nonExistingAuthorBook)).isInstanceOf(RuntimeException.class);
+                .update(nonExistingAuthorBook)).isInstanceOf(RuntimeException.class);
 
         var nonExistingGenreBook =
-                new BookRequestDto("Blade Runner",
+                new BookUpsertDto(bookIdx, "Blade Runner",
                         authors.getFirst().getId(),
                         Set.of(-1L));
-        assertThatThrownBy(() -> bookService.update(bookIdx, nonExistingGenreBook))
+        assertThatThrownBy(() -> bookService.update(nonExistingGenreBook))
                 .isInstanceOf(RuntimeException.class);
     }
 

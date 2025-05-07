@@ -1,11 +1,13 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.request.GenreRequestDto;
-import com.galaxy13.hw.dto.response.GenreResponseDto;
+import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.upsert.GenreUpsertDto;
+import com.galaxy13.hw.exception.MismatchedIdsException;
 import com.galaxy13.hw.service.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,27 +26,30 @@ public class GenreController {
 
     private final GenreService genreService;
 
-    @GetMapping("/")
-    public List<GenreResponseDto> genres() {
+    @GetMapping
+    public List<GenreDto> genres() {
         return genreService.findAllGenres()
                 .stream()
-                .sorted(Comparator.comparingLong(GenreResponseDto::getId))
+                .sorted(Comparator.comparingLong(GenreDto::id))
                 .toList();
     }
 
     @GetMapping("/{id}")
-    public GenreResponseDto getGenre(@PathVariable long id) {
+    public GenreDto getGenre(@PathVariable long id) {
         return genreService.findGenreById(id);
     }
 
     @PutMapping("/{id}")
-    public GenreResponseDto editGenre(@PathVariable("id") long id,
-                                      @RequestBody GenreRequestDto genreDto) {
-        return genreService.update(id, genreDto);
+    public GenreDto editGenre(@PathVariable("id") long id,
+                              @Validated @RequestBody GenreUpsertDto genreDto) {
+        if (id != genreDto.id()) {
+            throw new MismatchedIdsException(id, genreDto.id());
+        }
+        return genreService.update(genreDto);
     }
 
-    @PostMapping("/")
-    public ResponseEntity<GenreResponseDto> saveGenre(@RequestBody GenreRequestDto genreDto) {
-        return new ResponseEntity<>(genreService.insert(genreDto), HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<GenreDto> saveGenre(@Validated @RequestBody GenreUpsertDto genreDto) {
+        return new ResponseEntity<>(genreService.create(genreDto), HttpStatus.CREATED);
     }
 }

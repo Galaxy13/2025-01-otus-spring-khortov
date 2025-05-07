@@ -1,13 +1,14 @@
 package com.galaxy13.hw.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.galaxy13.hw.dto.request.AuthorRequestDto;
-import com.galaxy13.hw.dto.response.AuthorResponseDto;
+import com.galaxy13.hw.dto.AuthorDto;
+import com.galaxy13.hw.dto.upsert.AuthorUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.service.AuthorService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -18,13 +19,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
-@WebMvcTest(controllers = AuthorController.class)
+@WebMvcTest(controllers = {AuthorController.class,})
+@Import(GlobalExceptionHandler.class)
 class AuthorControllerTest {
 
     @MockitoBean
@@ -48,11 +48,11 @@ class AuthorControllerTest {
 
     @Test
     void shouldReturnAuthorById() throws Exception {
-        AuthorResponseDto author = getAuthors().getFirst();
-        AuthorResponseDto expectedAuthor = new AuthorResponseDto(author.getId(), "New Name", "New Surname");
-        when(authorService.findAuthorById(author.getId())).thenReturn(expectedAuthor);
+        AuthorDto author = getAuthors().getFirst();
+        AuthorDto expectedAuthor = new AuthorDto(author.id(), "New Name", "New Surname");
+        when(authorService.findAuthorById(author.id())).thenReturn(expectedAuthor);
 
-        mvc.perform(get("/api/v1/author/" + expectedAuthor.getId()).accept("application/json"))
+        mvc.perform(get("/api/v1/author/" + expectedAuthor.id()).accept("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedAuthor)))
                 .andReturn();
@@ -60,14 +60,14 @@ class AuthorControllerTest {
 
     @Test
     void shouldEditAuthor() throws Exception {
-        AuthorResponseDto author = getAuthors().getFirst();
-        AuthorResponseDto expectedAuthor = new AuthorResponseDto(author.getId(),
+        AuthorDto author = getAuthors().getFirst();
+        AuthorDto expectedAuthor = new AuthorDto(author.id(),
                 "New Name", "New Surname");
-        AuthorRequestDto requestDto =
-                new AuthorRequestDto(expectedAuthor.getFirstName(), expectedAuthor.getLastName());
-        when(authorService.update(expectedAuthor.getId(), requestDto)).thenReturn(expectedAuthor);
+        AuthorUpsertDto requestDto =
+                new AuthorUpsertDto(expectedAuthor.id(), expectedAuthor.firstName(), expectedAuthor.lastName());
+        when(authorService.update( requestDto)).thenReturn(expectedAuthor);
 
-        mvc.perform(put("/api/v1/author/" + expectedAuthor.getId())
+        mvc.perform(put("/api/v1/author/" + expectedAuthor.id())
                         .accept("application/json")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
@@ -75,37 +75,39 @@ class AuthorControllerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedAuthor)));
 
         verify(authorService, times(1))
-                .update(expectedAuthor.getId(), requestDto);
+                .update(requestDto);
     }
 
     @Test
     void shouldSaveNewAuthor() throws Exception {
-        AuthorResponseDto expectedAuthor = new AuthorResponseDto(4, "New Name", "New Surname");
-        AuthorRequestDto requestDto = new AuthorRequestDto("New Name", "New Surname");
-        when(authorService.insert(requestDto)).thenReturn(expectedAuthor);
+        AuthorDto expectedAuthor = new AuthorDto(4L, "New Name", "New Surname");
+        AuthorUpsertDto requestDto = new AuthorUpsertDto(expectedAuthor.id(),
+                "New Name",
+                "New Surname");
+        when(authorService.create(requestDto)).thenReturn(expectedAuthor);
 
         String uri = "/api/v1/author";
 
         mvc.perform(post(uri).accept("application/json")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedAuthor)));
 
-        verify(authorService, times(1)).insert(requestDto);
+        verify(authorService, times(1)).create(requestDto);
     }
 
     @Test
-    void shouldThrowExceptionOnEditNonExistingAuthor() {
-        AuthorResponseDto nonExistingAuthor = new AuthorResponseDto(0, "Phillip" ,"Dick");
-        AuthorRequestDto requestDto =
-                new AuthorRequestDto(nonExistingAuthor.getFirstName(), nonExistingAuthor.getLastName());
-        when(authorService.update(nonExistingAuthor.getId(), requestDto))
+    void shouldThrowExceptionOnEditNonExistingAuthor() throws Exception {
+        AuthorDto nonExistingAuthor = new AuthorDto(0L, "Phillip" ,"Dick");
+        AuthorUpsertDto requestDto =
+                new AuthorUpsertDto(nonExistingAuthor.id(),
+                        nonExistingAuthor.firstName(), nonExistingAuthor.lastName());
+        when(authorService.update(requestDto))
         .thenThrow(EntityNotFoundException.class);
-        assertThatThrownBy(() ->
-                mvc.perform(put("/api/v1/author/" + nonExistingAuthor.getId())
+                mvc.perform(put("/api/v1/author/" + nonExistingAuthor.id())
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestDto))))
-                .matches(e -> e.getCause() instanceof EntityNotFoundException);
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                        .andExpect(status().isNotFound());
     }
 }

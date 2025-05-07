@@ -76,8 +76,8 @@ const closeModal = () => showEditModal.value = false;
 const closeCommentsModal = () => showCommentsModal.value = false;
 
 const saveBook = async (book) => {
-  if (book.id) {
-    await bookApi.updateBook(book.id, book);
+  if (book.id !== 0) {
+    await bookApi.updateBook(book);
   } else {
     await bookApi.createBook(book);
   }

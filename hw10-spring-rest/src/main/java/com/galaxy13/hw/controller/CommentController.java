@@ -1,7 +1,8 @@
 package com.galaxy13.hw.controller;
 
-import com.galaxy13.hw.dto.request.CommentRequestDto;
-import com.galaxy13.hw.dto.response.CommentResponseDto;
+import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.dto.upsert.CommentUpsertDto;
+import com.galaxy13.hw.exception.MismatchedIdsException;
 import com.galaxy13.hw.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,24 +26,27 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @GetMapping("/")
-    public List<CommentResponseDto> commentsByBookId(@RequestParam("book_id") long bookId) {
+    @GetMapping
+    public List<CommentDto> commentsByBookId(@RequestParam("book_id") long bookId) {
         return commentService.findCommentByBookId(bookId);
     }
 
     @GetMapping("/{comment_id}")
-    public CommentResponseDto getComment(@PathVariable("comment_id") long commentId) {
+    public CommentDto getComment(@PathVariable("comment_id") long commentId) {
         return commentService.findCommentById(commentId);
     }
 
     @PutMapping("/{comment_id}")
-    public CommentResponseDto editComment(@PathVariable("comment_id") long commentId,
-                                          @Validated @RequestBody CommentRequestDto comment) {
-        return commentService.update(commentId, comment);
+    public CommentDto editComment(@PathVariable("comment_id") long id,
+                                  @Validated @RequestBody CommentUpsertDto commentDto) {
+        if (id != commentDto.id()){
+            throw new MismatchedIdsException(id, commentDto.id());
+        }
+        return commentService.update(commentDto);
     }
 
-    @PostMapping("/")
-    public ResponseEntity<CommentResponseDto> newComment(@Validated @RequestBody CommentRequestDto comment) {
-        return new ResponseEntity<>(commentService.create(comment), HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<CommentDto> newComment(@Validated @RequestBody CommentUpsertDto commentDto) {
+        return new ResponseEntity<>(commentService.create(commentDto), HttpStatus.CREATED);
     }
 }

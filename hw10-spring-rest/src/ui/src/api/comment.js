@@ -16,8 +16,8 @@ export default {
         return handleResponse(response);
     },
 
-    async updateComment(id, comment) {
-        const response = await fetch(`${BASE_URL}comment/${id}`, {
+    async updateComment(comment) {
+        const response = await fetch(`${BASE_URL}comment/${comment.id}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(comment),

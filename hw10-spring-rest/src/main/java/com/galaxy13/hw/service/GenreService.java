@@ -1,16 +1,16 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.request.GenreRequestDto;
-import com.galaxy13.hw.dto.response.GenreResponseDto;
+import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.upsert.GenreUpsertDto;
 
 import java.util.List;
 
 public interface GenreService {
-    List<GenreResponseDto> findAllGenres();
+    List<GenreDto> findAllGenres();
 
-    GenreResponseDto findGenreById(long id);
+    GenreDto findGenreById(long id);
 
-    GenreResponseDto update(long id, GenreRequestDto genreDto);
+    GenreDto update(GenreUpsertDto genreDto);
 
-    GenreResponseDto insert(GenreRequestDto genreDto);
+    GenreDto create(GenreUpsertDto genreDto);
 }

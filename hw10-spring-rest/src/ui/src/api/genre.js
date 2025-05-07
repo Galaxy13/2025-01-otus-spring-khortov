@@ -25,8 +25,8 @@ export default {
         return handleResponse(response);
     },
 
-    async updateGenre(id, genre) {
-        const response = await fetch(`${BASE_URL}genre/${id}`, {
+    async updateGenre(genre) {
+        const response = await fetch(`${BASE_URL}genre/${genre.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(genre),

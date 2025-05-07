@@ -52,7 +52,7 @@ watch(() => props.author, (newAuthor) => {
 
 const save = () => {
   emit('save', {
-    id: localAuthor.value.id || null,
+    id: localAuthor.value.id || 0,
     firstName: localAuthor.value.firstName,
     lastName: localAuthor.value.lastName
   });

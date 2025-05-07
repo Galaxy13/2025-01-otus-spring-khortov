@@ -81,7 +81,7 @@ watch(() => props.book, (newBook) => {
 
 const save = () => {
   const bookDto = {
-    id: localBook.value.id || null,
+    id: localBook.value.id || 0,
     title: localBook.value.title,
     authorId: localBook.value.authorId,
     genreIds: [...localBook.value.genreIds]

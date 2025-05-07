@@ -54,7 +54,10 @@ watch(() => props.bookId, fetchComments, { immediate: true });
 
 const saveComment = async (comment) => {
   try {
-    await commentApi.updateComment(comment.id, { comment: comment.text, bookId: props.bookId });
+    await commentApi.updateComment(
+        { id: comment.id,
+          text: comment.text,
+          bookId: props.bookId });
   } catch (error) {
     console.error('Error saving comment:', error);
   }

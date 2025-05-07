@@ -1,7 +1,7 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.request.CommentRequestDto;
-import com.galaxy13.hw.dto.response.CommentResponseDto;
+import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.dto.upsert.CommentUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Comment;
@@ -93,11 +93,11 @@ class CommentServiceIntegrationTest {
     void shouldInsertNewComment() {
         Book book = new Book();
         book.setId(2);
-        var newComment = new CommentRequestDto("New comment", book.getId());
+        var newComment = new CommentUpsertDto(0L, "New comment", book.getId());
         var actualComment = commentService.create(newComment);
-        var expectedComment = new CommentResponseDto(4, newComment.comment(), newComment.bookId());
+        var expectedComment = new CommentDto(4, newComment.text(), newComment.bookId());
         assertThat(actualComment).matches(
-                commentDto -> commentDto.getId() > 0
+                commentDto -> commentDto.id() > 0
         ).usingRecursiveComparison().ignoringFields("id").isEqualTo(expectedComment);
     }
 
@@ -106,7 +106,7 @@ class CommentServiceIntegrationTest {
     void shouldNotInsertNonExistingComment() {
         Book book = new Book();
         book.setId(-1);
-        var newComment = new CommentRequestDto("New comment", book.getId());
+        var newComment = new CommentUpsertDto(3L, "New comment", book.getId());
         assertThatThrownBy(() -> commentService.create(newComment)).isInstanceOf(RuntimeException.class);
     }
 
@@ -115,9 +115,10 @@ class CommentServiceIntegrationTest {
     void shouldUpdateComment() {
         Book book = new Book();
         book.setId(1);
-        var updateComment = new CommentRequestDto("New comment", book.getId());
-        var actualComment = commentService.update(1, updateComment);
-        var expectedComment = new CommentResponseDto(1, updateComment.comment(), updateComment.bookId());
+        var commentIdx = 1L;
+        var updateComment = new CommentUpsertDto(commentIdx, "New comment", book.getId());
+        var actualComment = commentService.update(updateComment);
+        var expectedComment = new CommentDto(1, updateComment.text(), updateComment.bookId());
         assertThat(actualComment).usingRecursiveComparison().isEqualTo(expectedComment);
     }
 
@@ -126,11 +127,11 @@ class CommentServiceIntegrationTest {
     void shouldNotUpdateNonExistingComment() {
         Book book = new Book();
         book.setId(1);
-        var newComment = new CommentRequestDto("New comment", book.getId());
-        assertThatThrownBy(() -> commentService.update(-1, newComment)).isInstanceOf(RuntimeException.class);
+        var newComment = new CommentUpsertDto(-1L, "New comment", book.getId());
+        assertThatThrownBy(() -> commentService.update(newComment)).isInstanceOf(RuntimeException.class);
     }
 
-    private CommentResponseDto toDto(Comment comment) {
-        return new CommentResponseDto(comment.getId(), comment.getText(), comment.getBook().getId());
+    private CommentDto toDto(Comment comment) {
+        return new CommentDto(comment.getId(), comment.getText(), comment.getBook().getId());
     }
 }

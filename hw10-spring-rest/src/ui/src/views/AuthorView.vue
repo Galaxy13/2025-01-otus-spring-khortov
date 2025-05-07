@@ -49,11 +49,12 @@ const closeModal = () => showEditModal.value = false;
 
 const saveAuthor = async (author) => {
   const authorDto = {
+    id: author?.id || 0,
     firstName: author.firstName,
     lastName: author.lastName,
   }
-  if (author.id) {
-    await authorApi.updateAuthor(author.id, authorDto);
+  if (author.id !== 0) {
+    await authorApi.updateAuthor(authorDto);
   } else {
     await authorApi.createAuthor(authorDto);
   }

@@ -49,10 +49,11 @@ const closeModal = () => showEditModal.value = false;
 
 const saveGenre = async (genre) => {
   const genreDto = {
+    id: genre?.id || null,
     name: genre.name,
   }
-  if (genre.id) {
-    await genreApi.updateGenre(genre.id, genreDto);
+  if (genre.id !== 0) {
+    await genreApi.updateGenre(genreDto);
   } else {
     await genreApi.createGenre(genreDto);
   }

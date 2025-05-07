@@ -1,16 +1,16 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.request.CommentRequestDto;
-import com.galaxy13.hw.dto.response.CommentResponseDto;
+import com.galaxy13.hw.dto.CommentDto;
+import com.galaxy13.hw.dto.upsert.CommentUpsertDto;
 
 import java.util.List;
 
 public interface CommentService {
-    List<CommentResponseDto> findCommentByBookId(long id);
+    List<CommentDto> findCommentByBookId(long id);
 
-    CommentResponseDto findCommentById(long id);
+    CommentDto findCommentById(long id);
 
-    CommentResponseDto update(long id, CommentRequestDto commentDto);
+    CommentDto update(CommentUpsertDto commentDto);
 
-    CommentResponseDto create(CommentRequestDto commentDto);
+    CommentDto create(CommentUpsertDto commentDto);
 }

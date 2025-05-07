@@ -1,9 +1,9 @@
 package com.galaxy13.hw.service;
 
-import com.galaxy13.hw.dto.request.AuthorRequestDto;
+import com.galaxy13.hw.dto.upsert.AuthorUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import org.springframework.core.convert.converter.Converter;
-import com.galaxy13.hw.dto.response.AuthorResponseDto;
+import com.galaxy13.hw.dto.AuthorDto;
 import com.galaxy13.hw.repository.AuthorRepository;
 import com.galaxy13.hw.model.Author;
 import lombok.RequiredArgsConstructor;
@@ -17,24 +17,24 @@ import java.util.List;
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository authorRepository;
 
-    private final Converter<Author, AuthorResponseDto> authorDtoMapper;
+    private final Converter<Author, AuthorDto> authorDtoMapper;
 
     @Transactional(readOnly = true)
     @Override
-    public List<AuthorResponseDto> findAllAuthors() {
+    public List<AuthorDto> findAllAuthors() {
         return authorRepository.findAllByOrderByIdAsc().stream().map(authorDtoMapper::convert).toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public AuthorResponseDto findAuthorById(long id) {
+    public AuthorDto findAuthorById(long id) {
         return authorRepository.findById(id).map(authorDtoMapper::convert).orElseThrow(() ->
                 new EntityNotFoundException("Author with id " + id + " not found"));
     }
 
     @Transactional
     @Override
-    public AuthorResponseDto insert(AuthorRequestDto authorDto) {
+    public AuthorDto create(AuthorUpsertDto authorDto) {
         Author author = new Author();
         author.setFirstName(authorDto.firstName());
         author.setLastName(authorDto.lastName());
@@ -43,7 +43,8 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Transactional
     @Override
-    public AuthorResponseDto update(long id, AuthorRequestDto updatedAuthor) {
+    public AuthorDto update(AuthorUpsertDto updatedAuthor) {
+        long id = updatedAuthor.id();
         Author existingAuthor = authorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Author with id " + id + " not found"));
         existingAuthor.setFirstName(updatedAuthor.firstName());

@@ -1,8 +1,8 @@
 package com.galaxy13.hw.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.galaxy13.hw.dto.request.GenreRequestDto;
-import com.galaxy13.hw.dto.response.GenreResponseDto;
+import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.upsert.GenreUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.service.GenreService;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class GenreControllerTest {
 
     @Test
     void shouldReturnAllGenres() throws Exception {
-        List<GenreResponseDto> expectedGenres = getGenres();
+        List<GenreDto> expectedGenres = getGenres();
         when(genreService.findAllGenres()).thenReturn(expectedGenres);
 
         mvc.perform(get("/api/v1/genre"))
@@ -49,11 +49,11 @@ class GenreControllerTest {
 
     @Test
     void shouldReturnGenreById() throws Exception {
-        GenreResponseDto expectedGenre = getGenres().getFirst();
-        GenreRequestDto requestDto = new GenreRequestDto(expectedGenre.getName());
-        when(genreService.findGenreById(expectedGenre.getId())).thenReturn(expectedGenre);
+        GenreDto expectedGenre = getGenres().getFirst();
+        GenreUpsertDto requestDto = new GenreUpsertDto(expectedGenre.id(), expectedGenre.name());
+        when(genreService.findGenreById(expectedGenre.id())).thenReturn(expectedGenre);
 
-        mvc.perform(get("/api/v1/genre/" + expectedGenre.getId())
+        mvc.perform(get("/api/v1/genre/" + expectedGenre.id())
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
@@ -62,39 +62,39 @@ class GenreControllerTest {
 
     @Test
     void shouldThrowExceptionWhenGenreNotFound() {
-        GenreResponseDto nonExistingGenre = new GenreResponseDto(0, null);
-        when(genreService.findGenreById(nonExistingGenre.getId())).thenThrow(EntityNotFoundException.class);
+        GenreDto nonExistingGenre = new GenreDto(0, null);
+        when(genreService.findGenreById(nonExistingGenre.id())).thenThrow(EntityNotFoundException.class);
 
-        assertThatThrownBy(() -> mvc.perform(get("/api/v1/genre/" + nonExistingGenre.getId())))
+        assertThatThrownBy(() -> mvc.perform(get("/api/v1/genre/" + nonExistingGenre.id())))
                 .matches(e -> e.getCause() instanceof EntityNotFoundException);
     }
 
     @Test
     void shouldEditGenre() throws Exception {
-        GenreResponseDto genre = getGenres().get(1);
-        GenreResponseDto expectedGenre = new GenreResponseDto(genre.getId(), "New Genre");
-        GenreRequestDto requestDto = new GenreRequestDto(genre.getName());
-        when(genreService.update(expectedGenre.getId(), requestDto)).thenReturn(expectedGenre);
+        GenreDto genre = getGenres().get(1);
+        GenreDto expectedGenre = new GenreDto(genre.id(), "New Genre");
+        GenreUpsertDto requestDto = new GenreUpsertDto(expectedGenre.id(), genre.name());
+        when(genreService.update(requestDto)).thenReturn(expectedGenre);
 
-        String uri = "/api/v1/genre/" + genre.getId();
+        String uri = "/api/v1/genre/" + genre.id();
 
         mvc.perform(put(uri).contentType("application/json").content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedGenre)));
         verify(genreService, times(1))
-                .update(expectedGenre.getId(), requestDto);
+                .update(requestDto);
     }
 
     @Test
     void shouldCreateGenre() throws Exception {
-        GenreResponseDto newGenre = new GenreResponseDto(7, "New Genre");
-        GenreRequestDto requestDto = new GenreRequestDto(newGenre.getName());
-        when(genreService.insert(requestDto)).thenReturn(newGenre);
+        GenreDto newGenre = new GenreDto(7, "New Genre");
+        GenreUpsertDto requestDto = new GenreUpsertDto(newGenre.id(), newGenre.name());
+        when(genreService.create(requestDto)).thenReturn(newGenre);
 
         mvc.perform(post("/api/v1/genre")
                         .contentType("application/json").content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(newGenre)));
-        verify(genreService, times(1)).insert(requestDto);
+        verify(genreService, times(1)).create(requestDto);
     }
 }
