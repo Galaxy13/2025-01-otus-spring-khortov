@@ -6,6 +6,7 @@ import com.galaxy13.hw.dto.BookDto;
 import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.dto.upsert.BookUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
+import com.galaxy13.hw.exception.controller.GlobalExceptionHandler;
 import com.galaxy13.hw.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -123,7 +124,21 @@ class BookControllerTest {
 
         mvc.perform(get("/api/v1/book/" + -1L))
                 .andExpect(status().isNotFound());
+
+        when(bookService.findById(-2L)).thenThrow(NullPointerException.class);
+        mvc.perform(get("/api/v1/book/" + -2L))
+                .andExpect(status().isInternalServerError());
     }
 
-
+    @Test
+    void shouldReturnBadRequestOnWrongCreateBody() throws Exception {
+        mvc.perform(post("/api/v1/book").contentType("application/json")
+                .content("""
+                        {
+                        "id": 0,
+                        "authorId": 2,
+                        "genreIds": [1, 3]
+                        }"""))
+                .andExpect(status().isBadRequest());
+    }
 }

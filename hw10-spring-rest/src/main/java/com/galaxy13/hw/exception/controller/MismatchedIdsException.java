@@ -1,4 +1,4 @@
-package com.galaxy13.hw.exception;
+package com.galaxy13.hw.exception.controller;
 
 public class MismatchedIdsException extends RuntimeException {
   public MismatchedIdsException(Long pathId, Long bodyId) {

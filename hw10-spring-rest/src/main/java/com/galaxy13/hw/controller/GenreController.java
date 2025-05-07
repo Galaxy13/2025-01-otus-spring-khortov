@@ -2,7 +2,7 @@ package com.galaxy13.hw.controller;
 
 import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.dto.upsert.GenreUpsertDto;
-import com.galaxy13.hw.exception.MismatchedIdsException;
+import com.galaxy13.hw.exception.controller.MismatchedIdsException;
 import com.galaxy13.hw.service.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

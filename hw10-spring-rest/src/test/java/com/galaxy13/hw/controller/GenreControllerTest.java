@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -61,12 +60,12 @@ class GenreControllerTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenGenreNotFound() {
+    void shouldThrowExceptionWhenGenreNotFound() throws Exception {
         GenreDto nonExistingGenre = new GenreDto(0, null);
         when(genreService.findGenreById(nonExistingGenre.id())).thenThrow(EntityNotFoundException.class);
 
-        assertThatThrownBy(() -> mvc.perform(get("/api/v1/genre/" + nonExistingGenre.id())))
-                .matches(e -> e.getCause() instanceof EntityNotFoundException);
+        mvc.perform(get("/api/v1/genre/" + nonExistingGenre.id()))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -93,8 +92,18 @@ class GenreControllerTest {
 
         mvc.perform(post("/api/v1/genre")
                         .contentType("application/json").content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(newGenre)));
         verify(genreService, times(1)).create(requestDto);
+    }
+
+    @Test
+    void shouldReturnBadRequestOnValidationError() throws Exception {
+        mvc.perform(post("/api/v1/genre").contentType("application/json")
+                        .content("""
+                        {
+                        "name": "New Genre"
+                        }"""))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -4,7 +4,7 @@
 
     <div v-if="loading">Загрузка...</div>
 
-    <div v-else-if="comments.length === 0">Комментриев нет</div>
+    <div v-else-if="comments.length === 0">Комментариев нет</div>
 
     <ul v-else>
       <li v-for="comment in comments" :key="comment.id">
@@ -12,6 +12,15 @@
         <button @click="saveComment(comment)">💾</button>
       </li>
     </ul>
+
+    <div class="new-comment">
+      <input
+          v-model="newCommentText"
+          placeholder="Введите новый комментарий"
+          @keyup.enter="addComment"
+      />
+      <button @click="addComment" class="save-button">Добавить</button>
+    </div>
 
     <button
         class="close-button"
@@ -36,6 +45,7 @@ const props = defineProps({
 defineEmits(['close']);
 const comments = ref([]);
 const loading = ref(false);
+const newCommentText = ref('');
 
 const fetchComments = async () => {
   try {
@@ -50,16 +60,34 @@ const fetchComments = async () => {
   }
 };
 
-watch(() => props.bookId, fetchComments, { immediate: true });
+watch(() => props.bookId, fetchComments, {immediate: true});
 
 const saveComment = async (comment) => {
   try {
-    await commentApi.updateComment(
-        { id: comment.id,
-          text: comment.text,
-          bookId: props.bookId });
+    await commentApi.updateComment({
+      id: comment.id,
+      text: comment.text,
+      bookId: props.bookId
+    });
   } catch (error) {
     console.error('Error saving comment:', error);
+  }
+};
+
+const addComment = async () => {
+  if (!newCommentText.value.trim()) return;
+
+  try {
+    const newComment = await commentApi.createComment({
+      id: 0,
+      text: newCommentText.value,
+      bookId: props.bookId
+    });
+
+    comments.value = [...comments.value, newComment];
+    newCommentText.value = '';
+  } catch (error) {
+    console.error('Error adding comment:', error);
   }
 };
 </script>
@@ -80,12 +108,23 @@ const saveComment = async (comment) => {
 ul {
   list-style: none;
   padding: 0;
+  margin-bottom: 1rem;
 }
 
 li {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+.new-comment {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.new-comment input {
+  flex-grow: 1;
 }
 
 .close-button {
@@ -105,4 +144,17 @@ li {
   background-color: black;
   color: red;
 }
+
+.save-button {
+  padding: 6px 10px;
+  margin-right: 6px;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  background: #4a6baf;
+  color: #fff;
+}
+
 </style>

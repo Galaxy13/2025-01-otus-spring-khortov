@@ -156,5 +156,4 @@ select[multiple] {
   background-color: black;
   color: red;
 }
-
 </style>

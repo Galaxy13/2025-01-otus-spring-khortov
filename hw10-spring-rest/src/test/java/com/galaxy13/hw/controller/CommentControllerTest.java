@@ -19,7 +19,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -61,12 +60,12 @@ class CommentControllerTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenCommentNotFound() {
+    void shouldThrowExceptionWhenCommentNotFound() throws Exception {
         CommentDto nonExistingComment = new CommentDto(0, null, 0);
         when(commentService.findCommentById(nonExistingComment.id())).thenThrow(EntityNotFoundException.class);
 
-        assertThatThrownBy(() -> mvc.perform(get("/api/v1/comment/" + nonExistingComment.id())))
-                .matches(e -> e.getCause() instanceof EntityNotFoundException);
+        mvc.perform(get("/api/v1/comment/" + nonExistingComment.id()))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -98,8 +97,19 @@ class CommentControllerTest {
 
         String uri = "/api/v1/comment";
         mvc.perform(post(uri).contentType("application/json").content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(expected)));
         verify(commentService, times(1)).create(requestDto);
+    }
+
+    @Test
+    void shouldReturnBadRequestOnValidationError() throws Exception {
+        mvc.perform(post("/api/v1/comment").contentType("application/json")
+                        .content("""
+                        {
+                        "id": 0,
+                        "text": "New Comment"
+                        }"""))
+                .andExpect(status().isBadRequest());
     }
 }

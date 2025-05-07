@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galaxy13.hw.dto.AuthorDto;
 import com.galaxy13.hw.dto.upsert.AuthorUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
+import com.galaxy13.hw.exception.controller.GlobalExceptionHandler;
 import com.galaxy13.hw.service.AuthorService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ class AuthorControllerTest {
                 "New Name", "New Surname");
         AuthorUpsertDto requestDto =
                 new AuthorUpsertDto(expectedAuthor.id(), expectedAuthor.firstName(), expectedAuthor.lastName());
-        when(authorService.update( requestDto)).thenReturn(expectedAuthor);
+        when(authorService.update(requestDto)).thenReturn(expectedAuthor);
 
         mvc.perform(put("/api/v1/author/" + expectedAuthor.id())
                         .accept("application/json")
@@ -109,5 +110,16 @@ class AuthorControllerTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
                         .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnBadRequestOnValidationError() throws Exception {
+        mvc.perform(post("/api/v1/author").contentType("application/json")
+                .content("""
+                        {
+                        "id": 0,
+                        "lastName": "Marx"
+                        }"""))
+                .andExpect(status().isBadRequest());
     }
 }

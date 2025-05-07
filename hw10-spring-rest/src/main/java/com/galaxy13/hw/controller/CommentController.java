@@ -2,7 +2,7 @@ package com.galaxy13.hw.controller;
 
 import com.galaxy13.hw.dto.CommentDto;
 import com.galaxy13.hw.dto.upsert.CommentUpsertDto;
-import com.galaxy13.hw.exception.MismatchedIdsException;
+import com.galaxy13.hw.exception.controller.MismatchedIdsException;
 import com.galaxy13.hw.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,7 +39,7 @@ public class CommentController {
     @PutMapping("/{comment_id}")
     public CommentDto editComment(@PathVariable("comment_id") long id,
                                   @Validated @RequestBody CommentUpsertDto commentDto) {
-        if (id != commentDto.id()){
+        if (id != commentDto.id()) {
             throw new MismatchedIdsException(id, commentDto.id());
         }
         return commentService.update(commentDto);

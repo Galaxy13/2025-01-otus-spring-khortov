@@ -2,7 +2,7 @@ package com.galaxy13.hw.controller;
 
 import com.galaxy13.hw.dto.upsert.AuthorUpsertDto;
 import com.galaxy13.hw.dto.AuthorDto;
-import com.galaxy13.hw.exception.MismatchedIdsException;
+import com.galaxy13.hw.exception.controller.MismatchedIdsException;
 import com.galaxy13.hw.service.AuthorService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +39,7 @@ public class AuthorController {
     @PutMapping("/{authorId}")
     public AuthorDto editAuthor(@NotNull @PathVariable("authorId") long id,
                                 @Validated @RequestBody AuthorUpsertDto authorDto) {
-        if (authorDto.id() != id){
+        if (authorDto.id() != id) {
             throw new MismatchedIdsException(id, authorDto.id());
         }
         return authorService.update(authorDto);

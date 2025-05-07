@@ -36,7 +36,7 @@ public class BookServiceImpl implements BookService {
     public BookDto findById(long id) {
         Optional<Book> book = bookRepository.findById(id);
         return book.map(bookDtoMapper::convert).orElseThrow(() ->
-                new EntityNotFoundException("Book with id %d found".formatted(id)));
+                new EntityNotFoundException("Book with id %d not found".formatted(id)));
     }
 
     @Transactional(readOnly = true)
