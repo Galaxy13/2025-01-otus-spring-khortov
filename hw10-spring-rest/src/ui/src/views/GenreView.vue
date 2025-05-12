@@ -49,7 +49,7 @@ const closeModal = () => showEditModal.value = false;
 
 const saveGenre = async (genre) => {
   const genreDto = {
-    id: genre?.id || null,
+    id: genre.id,
     name: genre.name,
   }
   if (genre.id !== 0) {
