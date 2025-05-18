@@ -1,6 +1,7 @@
 package com.galaxy13.hw.service;
 
 import com.galaxy13.hw.dto.upsert.AuthorUpsertDto;
+import com.galaxy13.hw.exception.EntityNotFoundException;
 import org.springframework.core.convert.converter.Converter;
 import com.galaxy13.hw.dto.AuthorDto;
 import com.galaxy13.hw.repository.AuthorRepository;
@@ -25,7 +26,9 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Mono<AuthorDto> findAuthorById(String id) {
-        return authorRepository.findById(id).mapNotNull(authorDtoMapper::convert);
+        return authorRepository.findById(id)
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("Author with provided id not found")))
+                .mapNotNull(authorDtoMapper::convert);
     }
 
     @Override
@@ -40,6 +43,7 @@ public class AuthorServiceImpl implements AuthorService {
     public Mono<AuthorDto> update(AuthorUpsertDto updatedAuthor) {
         String id = updatedAuthor.id();
         return authorRepository.findById(id)
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("Author with provided id to update not found")))
                 .flatMap( author -> {
                     author.setFirstName(updatedAuthor.firstName());
                     author.setLastName(updatedAuthor.lastName());

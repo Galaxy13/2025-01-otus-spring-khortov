@@ -7,7 +7,6 @@ import com.galaxy13.hw.repository.GenreRepository;
 import com.galaxy13.hw.model.Genre;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.core.convert.converter.Converter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -42,7 +41,6 @@ public class GenreServiceImpl implements GenreService {
                 }).mapNotNull(genreDtoMapper::convert);
     }
 
-    @Transactional
     @Override
     public Mono<GenreDto> create(GenreUpsertDto genreDto) {
         Genre genre = new Genre();

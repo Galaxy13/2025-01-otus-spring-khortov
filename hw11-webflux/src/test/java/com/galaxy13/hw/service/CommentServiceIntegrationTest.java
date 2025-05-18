@@ -1,22 +1,20 @@
 package com.galaxy13.hw.service;
 
+import com.galaxy13.hw.AbstractBaseMongoTest;
 import com.galaxy13.hw.dto.CommentDto;
-import com.galaxy13.hw.dto.upsert.CommentUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Comment;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -27,61 +25,60 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SuppressWarnings("java:S5778")
 @DisplayName("Integration Book service test")
-@DataJpaTest
-@Transactional(propagation = Propagation.NEVER)
-@Sql(scripts = {"/cleanup.sql", "/data.sql"},
-        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@DataMongoTest
 @Import({CommentServiceImpl.class})
 @ComponentScan("com.galaxy13.hw.mapper")
-class CommentServiceIntegrationTest {
+class CommentServiceIntegrationTest extends AbstractBaseMongoTest {
 
-    private final Map<Long, List<Comment>> commentsByAuthor = bookIdToCommentMap();
+    private final Map<String, List<Comment>> commentsByAuthor = bookIdToCommentMap();
 
     @Autowired
     private CommentService commentService;
 
     private static List<Comment> getComments() {
         Book book = new Book();
-        book.setId(1);
+        book.setId("1");
         Book book2 = new Book();
-        book2.setId(2);
+        book2.setId("2");
         Book book3 = new Book();
-        book3.setId(3);
+        book3.setId("3");
         return List.of(
-                new Comment(1L, "C_1", book),
-                new Comment(2L, "C_2", book),
-                new Comment(3L, "C_3", book2),
-                new Comment(4L, "C_4", book2),
-                new Comment(5L, "C_5", book3),
-                new Comment(6L, "C_6", book3)
+                new Comment("1", "C_1", book),
+                new Comment("2","C_2", book),
+                new Comment("3", "C_3", book2),
+                new Comment("4", "C_4", book2),
+                new Comment("5", "C_5", book3),
+                new Comment("6", "C_6", book3)
         );
     }
 
-    private static Map<Long, List<Comment>> bookIdToCommentMap() {
+    private static Map<String, List<Comment>> bookIdToCommentMap() {
         return getComments().stream().collect(Collectors.groupingBy(
                 comment -> comment.getBook().getId()
         ));
     }
 
+
     @DisplayName("Should get comment by id")
     @ParameterizedTest
     @MethodSource("getComments")
     void shouldGetCommentById(Comment expectedComment) {
-        var actualComment = commentService.findCommentById(expectedComment.getId());
+        var actualComment = commentService.findCommentById(expectedComment.getId()).orElseThrow(() ->
+                new EntityNotFoundException("Test comment entity not found"));
         assertThat(actualComment).usingRecursiveComparison().isEqualTo(toDto(expectedComment));
     }
 
     @DisplayName("Should not find non-existing comment")
     @Test
     void shouldNotFindNonExistingComment() {
-        assertThatThrownBy(() -> commentService.findCommentById(-1L)).isInstanceOf(EntityNotFoundException.class);
-        assertThatThrownBy(() -> commentService.findCommentById(7L)).isInstanceOf(EntityNotFoundException.class);
+        assertThat(commentService.findCommentById("-1")).isEmpty();
+        assertThat(commentService.findCommentById("7")).isEmpty();
     }
 
     @DisplayName("Should find comments for book")
     @ParameterizedTest
-    @ValueSource(longs = {1L, 2L, 3L})
-    void shouldFindCommentsForBook(Long bookId) {
+    @ValueSource(strings = {"1", "2", "3"})
+    void shouldFindCommentsForBook(String bookId) {
         var actualComments = commentService.findCommentByBookId(bookId);
         assertThat(actualComments).usingRecursiveComparison().isEqualTo(commentsByAuthor.get(bookId).stream().map(
                 this::toDto
@@ -92,12 +89,15 @@ class CommentServiceIntegrationTest {
     @Test
     void shouldInsertNewComment() {
         Book book = new Book();
-        book.setId(2);
-        var newComment = new CommentUpsertDto(0L, "New comment", book.getId());
-        var actualComment = commentService.create(newComment);
-        var expectedComment = new CommentDto(4, newComment.text(), newComment.bookId());
+        book.setId("2");
+        var newComment = new Comment("0", "New comment", book);
+        var actualComment = commentService.create(
+                newComment.getText(),
+                newComment.getBook().getId()
+        );
+        var expectedComment = toDto(newComment);
         assertThat(actualComment).matches(
-                commentDto -> commentDto.id() > 0
+                commentDto -> ObjectId.isValid(commentDto.getId())
         ).usingRecursiveComparison().ignoringFields("id").isEqualTo(expectedComment);
     }
 
@@ -105,20 +105,25 @@ class CommentServiceIntegrationTest {
     @Test
     void shouldNotInsertNonExistingComment() {
         Book book = new Book();
-        book.setId(-1);
-        var newComment = new CommentUpsertDto(3L, "New comment", book.getId());
-        assertThatThrownBy(() -> commentService.create(newComment)).isInstanceOf(RuntimeException.class);
+        book.setId("-1");
+        var newComment = new Comment("0", "New comment", book);
+        assertThatThrownBy(() -> commentService.create(
+                newComment.getText(),
+                newComment.getBook().getId()
+        )).isInstanceOf(RuntimeException.class);
     }
 
     @DisplayName("Should update comment")
     @Test
     void shouldUpdateComment() {
         Book book = new Book();
-        book.setId(1);
-        var commentIdx = 1L;
-        var updateComment = new CommentUpsertDto(commentIdx, "New comment", book.getId());
-        var actualComment = commentService.update(updateComment);
-        var expectedComment = new CommentDto(1, updateComment.text(), updateComment.bookId());
+        book.setId("1");
+        var updateComment = new Comment("1", "New comment", book);
+        var actualComment = commentService.update(
+                updateComment.getId(),
+                updateComment.getText()
+        );
+        var expectedComment = toDto(updateComment);
         assertThat(actualComment).usingRecursiveComparison().isEqualTo(expectedComment);
     }
 
@@ -126,9 +131,12 @@ class CommentServiceIntegrationTest {
     @Test
     void shouldNotUpdateNonExistingComment() {
         Book book = new Book();
-        book.setId(1);
-        var newComment = new CommentUpsertDto(-1L, "New comment", book.getId());
-        assertThatThrownBy(() -> commentService.update(newComment)).isInstanceOf(RuntimeException.class);
+        book.setId("1");
+        var newComment = new Comment("-1", "New comment", book);
+        assertThatThrownBy(() -> commentService.update(
+                newComment.getId(),
+                newComment.getText()
+        )).isInstanceOf(RuntimeException.class);
     }
 
     private CommentDto toDto(Comment comment) {

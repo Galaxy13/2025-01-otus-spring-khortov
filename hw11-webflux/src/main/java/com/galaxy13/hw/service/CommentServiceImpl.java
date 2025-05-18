@@ -23,12 +23,16 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Flux<CommentDto> findCommentByBookId(String id) {
-        return commentRepository.findByBookId(id).mapNotNull(commentDtoMapper::convert);
+        return commentRepository.findByBookId(id)
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("Comment with provided book id not found")))
+                .mapNotNull(commentDtoMapper::convert);
     }
 
     @Override
     public Mono<CommentDto> findCommentById(String id) {
-        return commentRepository.findById(id).mapNotNull(commentDtoMapper::convert);
+        return commentRepository.findById(id)
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("Comment with provided id not found")))
+                .mapNotNull(commentDtoMapper::convert);
     }
 
     @Override

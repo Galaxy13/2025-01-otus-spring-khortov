@@ -2,6 +2,7 @@ const BASE_URL = '/flux/';
 
 const handleResponse = async (response) => {
     if (!response.ok) throw new Error(await response.text());
+    if (response.status === 204) return response;
     return response.json();
 };
 

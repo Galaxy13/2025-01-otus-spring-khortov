@@ -1,6 +1,6 @@
 <template>
   <div class="modal">
-    <h2>Комментарии для книги #{{ bookId }}</h2>
+    <h2>Комментарии</h2>
 
     <div v-if="loading">Загрузка...</div>
 

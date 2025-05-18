@@ -1,4 +1,4 @@
-package com.galaxy13.hw.controller;
+package com.galaxy13.hw.route;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galaxy13.hw.dto.GenreDto;
