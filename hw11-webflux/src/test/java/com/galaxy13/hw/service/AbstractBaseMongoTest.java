@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 import java.io.IOException;
 
@@ -15,11 +16,10 @@ import java.io.IOException;
 public abstract class AbstractBaseMongoTest {
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private ReactiveMongoTemplate reactiveMongoTemplate;
 
-    public MongoTemplate getMongoTemplate() {
-        return mongoTemplate;
-    }
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @BeforeEach
     public void setUp() throws IOException {

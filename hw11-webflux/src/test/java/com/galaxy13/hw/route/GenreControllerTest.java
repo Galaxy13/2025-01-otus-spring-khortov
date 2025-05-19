@@ -4,12 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.dto.upsert.GenreUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
+import com.galaxy13.hw.exception.handler.GlobalExceptionHandler;
+import com.galaxy13.hw.exception.handler.StorageErrorAttributes;
+import com.galaxy13.hw.route.config.GenreRouteConfig;
+import com.galaxy13.hw.route.handler.GenreHandler;
+import com.galaxy13.hw.route.validator.UpsertDtoValidator;
 import com.galaxy13.hw.service.GenreService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -18,17 +27,13 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@WebMvcTest(controllers = GenreController.class)
+@WebFluxTest(controllers = GenreRouteConfig.class)
+@Import({GlobalExceptionHandler.class,
+        GenreHandler.class, StorageErrorAttributes.class, UpsertDtoValidator.class})
 class GenreControllerTest {
 
     @Autowired
-    private MockMvc mvc;
+    private WebTestClient wtc;
 
     @MockitoBean
     private GenreService genreService;
@@ -39,33 +44,34 @@ class GenreControllerTest {
     @Test
     void shouldReturnAllGenres() throws Exception {
         List<GenreDto> expectedGenres = getGenres();
-        when(genreService.findAllGenres()).thenReturn(expectedGenres);
+        when(genreService.findAllGenres()).thenReturn(Flux.fromStream(expectedGenres.stream()));
 
-        mvc.perform(get("/api/v1/genre"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedGenres)));
+        wtc.get().uri("/flux/genre")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(expectedGenres));
     }
 
     @Test
     void shouldReturnGenreById() throws Exception {
         GenreDto expectedGenre = getGenres().getFirst();
-        GenreUpsertDto requestDto = new GenreUpsertDto(expectedGenre.id(), expectedGenre.name());
-        when(genreService.findGenreById(expectedGenre.id())).thenReturn(expectedGenre);
+        when(genreService.findGenreById(expectedGenre.id())).thenReturn(Mono.just(expectedGenre));
 
-        mvc.perform(get("/api/v1/genre/" + expectedGenre.id())
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedGenre)));
+        wtc.get().uri("/flux/genre/" + expectedGenre.id())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody().json(objectMapper.writeValueAsString(expectedGenre));
     }
 
     @Test
-    void shouldThrowExceptionWhenGenreNotFound() throws Exception {
-        GenreDto nonExistingGenre = new GenreDto(0, null);
-        when(genreService.findGenreById(nonExistingGenre.id())).thenThrow(EntityNotFoundException.class);
+    void shouldReturnNotFoundWhenGenreNotFound() {
+        GenreDto nonExistingGenre = new GenreDto("0", null);
+        when(genreService.findGenreById(nonExistingGenre.id())).thenReturn(Mono.error(new EntityNotFoundException("")));
 
-        mvc.perform(get("/api/v1/genre/" + nonExistingGenre.id()))
-                .andExpect(status().isNotFound());
+        wtc.get().uri("/flux/genre/" + nonExistingGenre.id())
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
     @Test
@@ -73,37 +79,44 @@ class GenreControllerTest {
         GenreDto genre = getGenres().get(1);
         GenreDto expectedGenre = new GenreDto(genre.id(), "New Genre");
         GenreUpsertDto requestDto = new GenreUpsertDto(expectedGenre.id(), genre.name());
-        when(genreService.update(requestDto)).thenReturn(expectedGenre);
+        when(genreService.update(requestDto)).thenReturn(Mono.just(expectedGenre));
 
-        String uri = "/api/v1/genre/" + genre.id();
+        String uri = "/flux/genre/" + genre.id();
 
-        mvc.perform(put(uri).contentType("application/json").content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedGenre)));
+        wtc.put().uri(uri).contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(objectMapper.writeValueAsString(requestDto))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody().json(objectMapper.writeValueAsString(expectedGenre));
+
         verify(genreService, times(1))
                 .update(requestDto);
     }
 
     @Test
     void shouldCreateGenre() throws Exception {
-        GenreDto newGenre = new GenreDto(7, "New Genre");
+        GenreDto newGenre = new GenreDto("0", "New Genre");
         GenreUpsertDto requestDto = new GenreUpsertDto(newGenre.id(), newGenre.name());
-        when(genreService.create(requestDto)).thenReturn(newGenre);
+        when(genreService.create(requestDto)).thenReturn(Mono.just(newGenre));
 
-        mvc.perform(post("/api/v1/genre")
-                        .contentType("application/json").content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isCreated())
-                .andExpect(content().json(objectMapper.writeValueAsString(newGenre)));
+        wtc.post().uri("/flux/genre").contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(objectMapper.writeValueAsString(requestDto))
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                        .jsonPath("$.name").isEqualTo(newGenre.name());
+
         verify(genreService, times(1)).create(requestDto);
     }
 
     @Test
-    void shouldReturnBadRequestOnValidationError() throws Exception {
-        mvc.perform(post("/api/v1/genre").contentType("application/json")
-                        .content("""
+    void shouldReturnBadRequestOnValidationError() {
+        wtc.post().uri("/flux/genre").contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue("""
                         {
                         "name": "New Genre"
-                        }"""))
-                .andExpect(status().isBadRequest());
+                        }""")
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }

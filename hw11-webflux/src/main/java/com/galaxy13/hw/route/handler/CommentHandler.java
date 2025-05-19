@@ -2,10 +2,14 @@ package com.galaxy13.hw.route.handler;
 
 import com.galaxy13.hw.dto.CommentDto;
 import com.galaxy13.hw.dto.upsert.CommentUpsertDto;
+import com.galaxy13.hw.route.validator.UpsertDtoValidator;
 import com.galaxy13.hw.service.CommentService;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -22,6 +26,8 @@ public class CommentHandler {
 
     private final CommentService commentService;
 
+    private final UpsertDtoValidator validator;
+
     public Mono<ServerResponse> getCommentById(ServerRequest request) {
         String id = request.pathVariable("id");
         return commentService.findCommentById(id)
@@ -37,8 +43,8 @@ public class CommentHandler {
     }
 
     public Mono<ServerResponse> createComment(ServerRequest request) {
-        return request.bodyToMono(CommentUpsertDto.class)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Wrong request body")))
+        return request.bodyToMono(CommentUpsertDto.class).doOnNext(this::validate)
+                .onErrorResume(e -> Mono.error(new IllegalArgumentException(e.getMessage())))
                 .flatMap(commentService::create)
                 .flatMap(savedComment -> created(URI.create("/comment/" + savedComment.id()))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -48,8 +54,8 @@ public class CommentHandler {
     public Mono<ServerResponse> editComment(ServerRequest request) {
         String id = request.pathVariable("id");
 
-        return request.bodyToMono(CommentUpsertDto.class)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Comment body parameter is required")))
+        return request.bodyToMono(CommentUpsertDto.class).doOnNext(this::validate)
+                .onErrorResume(e -> Mono.error(new IllegalArgumentException(e.getMessage())))
                 .flatMap(dto -> {
                     if (dto.id() != null && !dto.id().equals(id)) {
                         return Mono.error(new IllegalArgumentException("ID in path and body must match"));
@@ -57,5 +63,13 @@ public class CommentHandler {
                     return commentService.update(dto);
                 })
                 .flatMap(c -> ok().contentType(MediaType.APPLICATION_JSON).bodyValue(c));
+    }
+
+    private void validate(CommentUpsertDto comment) {
+        Errors errors = new BeanPropertyBindingResult(comment, "comment");
+        validator.validate(comment, errors);
+        if (errors.hasErrors()) {
+            throw new ValidationException(errors.toString());
+        }
     }
 }

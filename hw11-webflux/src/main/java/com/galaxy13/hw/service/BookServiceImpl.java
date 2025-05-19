@@ -57,20 +57,16 @@ public class BookServiceImpl implements BookService {
                     }
                     return Mono.just(genres);
                 });
-
         return Mono.zip(authorMono, genresMono)
                 .flatMap(tuple -> {
                     Author author = tuple.getT1();
                     List<Genre> genres = tuple.getT2();
-
                     Book book = new Book();
                     book.setTitle(newBook.title());
                     book.setAuthor(author);
                     book.setGenres(genres);
-
                     return bookRepository.save(book);
-                })
-                .mapNotNull(bookDtoMapper::convert);
+                }).mapNotNull(bookDtoMapper::convert);
     }
 
     @Override
@@ -78,20 +74,19 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findById(updateBook.id())
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Book to update with provided id not found")))
                 .flatMap(book -> Mono.zip(
-                        authorRepository.findById(updateBook.authorId()),
+                        authorRepository.findById(updateBook.authorId())
+                                .switchIfEmpty(Mono.error(new IllegalArgumentException("Author not found"))),
                         genreRepository.findByIdIn(updateBook.genreIds()).collectList()
                 ))
-                .filter(tuple -> !tuple.getT2().isEmpty())
                 .flatMap(tuple -> {
                     var author = tuple.getT1();
                     var genres = tuple.getT2();
-
-                    Book saveBook = new Book(
-                            updateBook.id(),
-                            updateBook.title(),
-                            author,
-                            genres
-                    );
+                    if (genres.size() != updateBook.genreIds().size()) {
+                        return Mono.error(new IllegalArgumentException(
+                                "Not all genres were found. Expected: " + updateBook.genreIds().size() +
+                                        ", found: " + genres.size()));
+                    }
+                    Book saveBook = new Book(updateBook.id(), updateBook.title(), author, genres);
                     return bookRepository.save(saveBook)
                             .mapNotNull(bookDtoMapper::convert);
                 });

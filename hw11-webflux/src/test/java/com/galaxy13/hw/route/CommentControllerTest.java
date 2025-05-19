@@ -4,12 +4,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galaxy13.hw.dto.CommentDto;
 import com.galaxy13.hw.dto.upsert.CommentUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
+import com.galaxy13.hw.route.config.CommentRouteConfig;
+import com.galaxy13.hw.route.handler.CommentHandler;
+import com.galaxy13.hw.route.validator.UpsertDtoValidator;
 import com.galaxy13.hw.service.CommentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -19,17 +27,13 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@WebMvcTest(controllers = CommentController.class)
+@WebFluxTest(controllers = CommentRouteConfig.class)
+@Import({CommentHandler.class, UpsertDtoValidator.class})
+@ComponentScan("com.galaxy13.hw.exception.handler")
 class CommentControllerTest {
 
     @Autowired
-    private MockMvc mvc;
+    private WebTestClient wtc;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -39,33 +43,39 @@ class CommentControllerTest {
 
     @Test
     void shouldReturnCommentsForBook() throws Exception {
-        List<CommentDto> expectedComments = bookIdToCommentMap().get(1L);
-        when(commentService.findCommentByBookId(1L)).thenReturn(expectedComments);
+        String bookId = "1";
+        List<CommentDto> expectedComments = bookIdToCommentMap().get(bookId);
+        when(commentService.findCommentByBookId(bookId))
+                .thenReturn(Flux.fromIterable(expectedComments));
 
-        mvc.perform(get("/api/v1/comment?book_id=" + 1L))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedComments)));
+        wtc.get().uri(uriBuilder ->
+                        uriBuilder.path("/flux/comment").queryParam("book_id", bookId).build()).
+                exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(expectedComments));
     }
 
     @Test
     void shouldReturnCommentById() throws Exception {
         CommentDto expectedComment = getComments().getFirst();
-        when(commentService.findCommentById(expectedComment.id())).thenReturn(expectedComment);
+        when(commentService.findCommentById(expectedComment.id())).thenReturn(Mono.just(expectedComment));
 
-        String uri = "/api/v1/comment/" + expectedComment.id();
-        mvc.perform(get(uri))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedComment)))
-                .andReturn();
+        String uri = "/flux/comment/" + expectedComment.id();
+        wtc.get().uri(uri).exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(expectedComment));
     }
 
     @Test
-    void shouldThrowExceptionWhenCommentNotFound() throws Exception {
-        CommentDto nonExistingComment = new CommentDto(0, null, 0);
-        when(commentService.findCommentById(nonExistingComment.id())).thenThrow(EntityNotFoundException.class);
+    void shouldThrowExceptionWhenCommentNotFound() {
+        CommentDto nonExistingComment = new CommentDto("0", null, "0");
+        when(commentService.findCommentById(nonExistingComment.id()))
+                .thenReturn(Mono.error(new EntityNotFoundException("")));
 
-        mvc.perform(get("/api/v1/comment/" + nonExistingComment.id()))
-                .andExpect(status().isNotFound());
+        wtc.get().uri("/flux/comment/" + nonExistingComment.id()).exchange()
+                .expectStatus().isNotFound();
     }
 
     @Test
@@ -76,40 +86,45 @@ class CommentControllerTest {
                 comment.bookId());
         CommentUpsertDto requestDto = new CommentUpsertDto(expectedComment.id(),
                 expectedComment.text(), expectedComment.bookId());
-        when(commentService.update(requestDto)).thenReturn(expectedComment);
+        when(commentService.update(requestDto)).thenReturn(Mono.just(expectedComment));
 
-        String uri = "/api/v1/comment/" + comment.id();
+        String uri = "/flux/comment/" + comment.id();
 
-        mvc.perform(put(uri).contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedComment)));
+        wtc.put().uri(uri).contentType(MediaType.APPLICATION_JSON).bodyValue(requestDto)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(expectedComment));
 
         verify(commentService, times(1))
                 .update(requestDto);
     }
 
     @Test
-    void shouldCreateComment() throws Exception {
-        CommentUpsertDto requestDto = new CommentUpsertDto(0L, "New text", 3L);
-        CommentDto expected = new CommentDto(8, "New text", 3);
-        when(commentService.create(requestDto)).thenReturn(expected);
+    void shouldCreateComment() {
+        CommentUpsertDto requestDto = new CommentUpsertDto("0", "New text", "3");
+        CommentDto expected = new CommentDto("", "New text", "3");
+        when(commentService.create(requestDto)).thenReturn(Mono.just(expected));
 
-        String uri = "/api/v1/comment";
-        mvc.perform(post(uri).contentType("application/json").content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isCreated())
-                .andExpect(content().json(objectMapper.writeValueAsString(expected)));
+        String uri = "/flux/comment";
+        wtc.post().uri(uri).contentType(MediaType.APPLICATION_JSON).bodyValue(requestDto).exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.text").isEqualTo(expected.text())
+                .jsonPath("$.bookId").isEqualTo(expected.bookId());
+
         verify(commentService, times(1)).create(requestDto);
     }
 
     @Test
-    void shouldReturnBadRequestOnValidationError() throws Exception {
-        mvc.perform(post("/api/v1/comment").contentType("application/json")
-                        .content("""
+    void shouldReturnBadRequestOnValidationError() {
+        wtc.post().uri("/flux/comment").contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("""
                         {
                         "id": 0,
                         "text": "New Comment"
-                        }"""))
-                .andExpect(status().isBadRequest());
+                        }""")
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }

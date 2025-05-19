@@ -1,10 +1,12 @@
 package com.galaxy13.hw.service;
 
+import com.galaxy13.hw.dto.GenreDto;
+import com.galaxy13.hw.dto.upsert.BookUpsertDto;
+import com.galaxy13.hw.exception.EntityNotFoundException;
+import com.galaxy13.hw.mapper.BookDtoMapper;
 import com.galaxy13.hw.model.Author;
 import com.galaxy13.hw.model.Book;
 import com.galaxy13.hw.model.Genre;
-import com.galaxy13.hw.repository.CommentRepository;
-import org.bson.types.ObjectId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,16 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import reactor.test.StepVerifier;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SuppressWarnings("java:S5778")
 @DisplayName("Integration Book service test")
 @DataMongoTest
 @Import({BookServiceImpl.class,})
@@ -36,7 +38,7 @@ class BookServiceIntegrationTest extends AbstractBaseMongoTest {
     private BookService bookService;
 
     @Autowired
-    private CommentRepository commentRepository;
+    private BookDtoMapper mapper;
 
     private static List<Book> getBooks(List<Author> authors, List<Genre> genres) {
         return IntStream.range(1, 4).boxed().map(id -> new Book(
@@ -66,68 +68,78 @@ class BookServiceIntegrationTest extends AbstractBaseMongoTest {
     @DisplayName("Should find all books")
     @Test
     void shouldFindAllBooks() {
-        var expectedBooks = getBooks();
+        var expectedBooks = getBooks().stream().map(mapper::convert).collect(Collectors.toList());
         var actualBooks = bookService.findAll();
 
-        assertThat(actualBooks).usingRecursiveComparison().isEqualTo(expectedBooks);
+        StepVerifier.create(actualBooks)
+                .expectNextSequence(expectedBooks)
+                .verifyComplete();
     }
 
     @DisplayName("Should find book by id")
     @ParameterizedTest
     @MethodSource("getBooks")
-    void shouldFindBookById(Book expectedBook) {
+    void shouldFindBookById(Book expectedBook) throws Exception {
         var actualBook = bookService.findById(expectedBook.getId());
-        assertThat(actualBook).isPresent()
-                .get()
-                .usingRecursiveComparison()
-                .isEqualTo(expectedBook);
+        StepVerifier.create(actualBook)
+                .expectNext(mapper.convert(expectedBook))
+                .verifyComplete();
     }
 
     @DisplayName("Should not find non-existing book")
     @Test
     void shouldNotFindNonExistingBook() {
-        assertThat(bookService.findById("-1")).isNotPresent();
-        assertThat(bookService.findById("0")).isNotPresent();
-        assertThat(bookService.findById("4")).isNotPresent();
+        var noBook = bookService.findById("-1");
+        StepVerifier.create(noBook)
+                .verifyError(EntityNotFoundException.class);
     }
 
     @DisplayName("Should insert new book")
     @Test
     void shouldInsertNewBook() {
-        var newBook = new Book("0", "Blade Runner", authors.getFirst(), List.of(genres.getFirst()));
-        var actualBook = bookService.insert(newBook.getTitle(),
-                newBook.getAuthor().getId(),
-                newBook.getGenres().stream().map(Genre::getId).collect(Collectors.toSet()));
+        var expected = new BookUpsertDto("0", "Blade Runner",
+                authors.getFirst().getId(), Set.of(genres.getFirst().getId()));
 
-        assertThat(actualBook).isNotNull()
-                .matches(book -> ObjectId.isValid(book.getId()))
-                .usingRecursiveComparison()
-                .ignoringExpectedNullFields()
-                .ignoringFields("id")
-                .isEqualTo(newBook);
+        var actualBook = bookService.create(expected);
+
+        StepVerifier.create(actualBook)
+                .assertNext(bookDto -> {
+                    assertThat(bookDto.title()).isEqualTo(expected.title());
+                    assertThat(bookDto.author().id()).isEqualTo(expected.authorId());
+                    assertThat(bookDto.genres().stream().map(GenreDto::id).collect(Collectors.toSet()))
+                            .isEqualTo(expected.genreIds());
+                })
+                .verifyComplete();
     }
 
     @DisplayName("Should update existing book")
     @Test
     void shouldUpdateExistingBook() {
-        var updateBook = new Book("1", "Blade Runner", authors.getFirst(), List.of(genres.getFirst()));
-        var actualBook = bookService.update(updateBook.getId(),
-                updateBook.getTitle(),
-                updateBook.getAuthor().getId(),
-                updateBook.getGenres().stream().map(Genre::getId).collect(Collectors.toSet()));
+        var bookIdx = "1";
+        var updateBook = new BookUpsertDto(bookIdx, "Blade Runner",
+                authors.getFirst().getId(), Set.of(genres.getFirst().getId()));
+        var actualBook = bookService.update(updateBook);
 
-        assertThat(actualBook).isNotNull().usingRecursiveComparison().isEqualTo(updateBook);
+        StepVerifier.create(actualBook)
+                .assertNext(bookDto -> {
+                    assertThat(bookDto.id()).isEqualTo(updateBook.id());
+                    assertThat(bookDto.title()).isEqualTo(updateBook.title());
+                    assertThat(bookDto.author().id()).isEqualTo(updateBook.authorId());
+                    assertThat(bookDto.genres().stream().map(GenreDto::id).collect(Collectors.toSet()))
+                            .isEqualTo(updateBook.genreIds());
+                }).verifyComplete();
     }
 
     @DisplayName("Should not update non-existing book")
     @Test
     void shouldNotUpdateNonExistingBook() {
-        var updateBook = new Book("-1", "Blade Runner", authors.getFirst(), List.of(genres.getFirst()));
-        assertThatThrownBy(() -> bookService.update(updateBook.getId(),
-                updateBook.getTitle(),
-                updateBook.getAuthor().getId(),
-                updateBook.getGenres().stream().map(Genre::getId).collect(Collectors.toSet()))
-        ).isInstanceOf(RuntimeException.class);
+        var updateBook = new BookUpsertDto("-1", "Blade Runner",
+                authors.getFirst().getId(),
+                Set.of(genres.getFirst().getId()));
+        var errUpdate = bookService.update(updateBook);
+        StepVerifier.create(errUpdate)
+                .expectError(EntityNotFoundException.class)
+                .verify();
     }
 
     @DisplayName("Should not update book to non-existing author or genre")
@@ -138,31 +150,40 @@ class BookServiceIntegrationTest extends AbstractBaseMongoTest {
         Genre genre = genres.getFirst();
         genre.setId("-1");
 
-        var nonExistingAuthorBook = new Book("1", "Blade Runner", author, List.of(genres.getFirst()));
-        assertThatThrownBy(() -> bookService.update(
-                nonExistingAuthorBook.getId(),
-                nonExistingAuthorBook.getTitle(),
-                nonExistingAuthorBook.getAuthor().getId(),
-                nonExistingAuthorBook.getGenres().stream().map(Genre::getId).collect(Collectors.toSet())
-        )).isInstanceOf(RuntimeException.class);
+        var nonExistingAuthorBook =
+                new BookUpsertDto("1",
+                        "Blade Runner", "-1", Set.of(genres.getFirst().getId()));
+        var noAuthorErr = bookService.update(nonExistingAuthorBook);
+        StepVerifier.create(noAuthorErr)
+                .expectError(IllegalArgumentException.class)
+                .verify();
 
-        var nonExistingGenreBook = new Book("-1", "Blade Runner", authors.getFirst(), List.of(genre));
-        assertThatThrownBy(() -> bookService.update(
-                nonExistingGenreBook.getId(),
-                nonExistingGenreBook.getTitle(),
-                nonExistingGenreBook.getAuthor().getId(),
-                nonExistingGenreBook.getGenres().stream().map(Genre::getId).collect(Collectors.toSet())
-        )).isInstanceOf(RuntimeException.class);
+        var nonExistingGenreBook = new BookUpsertDto("1",
+                "Blade Runner", authors.getFirst().getId(), Set.of("-1", "2"));
+
+        var noGenreErr = bookService.update(nonExistingGenreBook);
+        StepVerifier.create(noGenreErr)
+                .expectError(IllegalArgumentException.class)
+                .verify();
     }
 
     @DisplayName("Should delete book from database")
     @Test
     void shouldDeleteBookFromDatabase() {
-        assertThat(bookService.findById("1")).isPresent();
-        assertThat(commentRepository.findByBookId("1")).isNotEmpty()
-                        .hasSize(2);
-        bookService.deleteById("1");
-        assertThat(bookService.findById("1")).isEmpty();
-        assertThat(commentRepository.findByBookId("1")).isEmpty();
+        var book = bookService.findById("1");
+        StepVerifier.create(book)
+                .assertNext(bookDto -> {
+                    assertThat(bookDto).isNotNull();
+                })
+                .verifyComplete();
+
+        var bookDeleted = bookService.deleteById("1");
+        StepVerifier.create(bookDeleted)
+                .verifyComplete();
+
+        var noBook = bookService.findById("1");
+        StepVerifier.create(noBook)
+                .expectError(EntityNotFoundException.class)
+                .verify();
     }
 }

@@ -15,7 +15,7 @@ import java.util.stream.LongStream;
 public class TestData {
     private static List<BookDto> getBooks(List<AuthorDto> authors, List<GenreDto> genres) {
         return IntStream.range(1, 4).boxed().map(id -> new BookDto(
-                id,
+                id.toString(),
                 "BookTitle_" + id,
                 authors.get((id - 1)),
                 new HashSet<>(genres.subList((id - 1) * 2, (id - 1) * 2 + 2))
@@ -28,31 +28,31 @@ public class TestData {
 
     public static List<AuthorDto> getAuthors() {
         return LongStream.range(1, 4).boxed().map(id -> new AuthorDto(
-                id, "Author_" + id, "Surname_" + id
+                id.toString(), "Author_" + id, "Surname_" + id
         )).toList();
     }
 
     public static List<GenreDto> getGenres() {
         return LongStream.range(1, 7).boxed().map(id -> new GenreDto(
-                id, "Genre_" + id
+                id.toString(), "Genre_" + id
         )).toList();
     }
 
     public static List<CommentDto> getComments() {
-        var book = new BookDto(1, null, null, null);
-        var book2 = new BookDto(2, null, null, null);
-        var book3 = new BookDto(3, null, null, null);
+        var book = new BookDto("1", null, null, null);
+        var book2 = new BookDto("2", null, null, null);
+        var book3 = new BookDto("3", null, null, null);
         return List.of(
-                new CommentDto(1L, "C_1", book.id()),
-                new CommentDto(2L, "C_2", book.id()),
-                new CommentDto(3L, "C_3", book2.id()),
-                new CommentDto(4L, "C_4", book2.id()),
-                new CommentDto(5L, "C_5", book3.id()),
-                new CommentDto(6L, "C_6", book3.id())
+                new CommentDto("1", "C_1", book.id()),
+                new CommentDto("2", "C_2", book.id()),
+                new CommentDto("3", "C_3", book2.id()),
+                new CommentDto("4", "C_4", book2.id()),
+                new CommentDto("5", "C_5", book3.id()),
+                new CommentDto("6", "C_6", book3.id())
         );
     }
 
-    public static Map<Long, List<CommentDto>> bookIdToCommentMap() {
+    public static Map<String, List<CommentDto>> bookIdToCommentMap() {
         return getComments().stream().collect(Collectors.groupingBy(
                 CommentDto::bookId
         ));

@@ -6,15 +6,21 @@ import com.galaxy13.hw.dto.BookDto;
 import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.dto.upsert.BookUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
-import com.galaxy13.hw.exception.controller.GlobalExceptionHandler;
+import com.galaxy13.hw.route.config.BookRouteConfig;
+import com.galaxy13.hw.route.handler.BookHandler;
+import com.galaxy13.hw.route.validator.UpsertDtoValidator;
 import com.galaxy13.hw.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,19 +31,14 @@ import static com.galaxy13.hw.helper.TestData.getGenres;
 import static com.galaxy13.hw.helper.TestData.getAuthors;
 import static com.galaxy13.hw.helper.TestData.getBooks;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = BookController.class)
-@Import(GlobalExceptionHandler.class)
+@WebFluxTest(controllers = BookRouteConfig.class)
+@Import({BookHandler.class, UpsertDtoValidator.class,})
+@ComponentScan("com.galaxy13.hw.exception.handler")
 class BookControllerTest {
 
     @Autowired
-    private MockMvc mvc;
+    private WebTestClient wtc;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -48,21 +49,23 @@ class BookControllerTest {
     @Test
     void shouldReturnAllBooks() throws Exception {
         List<BookDto> expectedBooks = getBooks();
-        when(bookService.findAll()).thenReturn(expectedBooks);
+        when(bookService.findAll()).thenReturn(Flux.fromIterable(expectedBooks));
 
-        mvc.perform(get("/api/v1/book"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedBooks)));
+        wtc.get().uri("/flux/book").exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(expectedBooks));
     }
 
     @Test
     void shouldReturnBookById() throws Exception {
         BookDto expectedBook = getBooks().getFirst();
-        when(bookService.findById(expectedBook.id())).thenReturn(expectedBook);
+        when(bookService.findById(expectedBook.id())).thenReturn(Mono.just(expectedBook));
 
-        mvc.perform(get("/api/v1/book/" + expectedBook.id()))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedBook)));
+        wtc.get().uri("/flux/book/" + expectedBook.id()).exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(expectedBook));
     }
 
     @Test
@@ -78,14 +81,14 @@ class BookControllerTest {
                 expectedBook.genres().stream().map(GenreDto::id).collect(Collectors.toSet()));
 
         when(bookService.update(requestDto))
-                .thenReturn(expectedBook);
+                .thenReturn(Mono.just(expectedBook));
 
-
-        mvc.perform(put("/api/v1/book/" + book.id())
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestDto)))
-                        .andExpect(status().isOk())
-                        .andExpect(content().json(objectMapper.writeValueAsString(expectedBook)));
+        wtc.put().uri("/flux/book/" + expectedBook.id()).contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(objectMapper.writeValueAsString(requestDto))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(expectedBook));
 
         Mockito.verify(bookService, Mockito.times(1))
                 .update(requestDto);
@@ -93,52 +96,56 @@ class BookControllerTest {
 
     @Test
     void shouldInsertNewBook() throws Exception {
-        BookDto newBook = new BookDto(4,
+        BookDto expected = new BookDto("",
                 "New Book",
                 getAuthors().getFirst(), new HashSet<>(getGenres().subList(1, 3)));
-        BookUpsertDto requestDto = new BookUpsertDto(0L, "New Title", 1L, Set.of(1L, 2L));
-        when(bookService.create(requestDto)).thenReturn(newBook);
+        BookUpsertDto requestDto = new BookUpsertDto("0", "New Title", "1", Set.of("1", "2"));
+        when(bookService.create(requestDto)).thenReturn(Mono.just(expected));
 
-        mvc.perform(post("/api/v1/book")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isCreated())
-                .andExpect(content().json(objectMapper.writeValueAsString(newBook)));
+        wtc.post().uri("/flux/book").contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(objectMapper.writeValueAsString(requestDto))
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(expected));
 
         Mockito.verify(bookService, Mockito.times(1)).create(requestDto);
     }
 
     @Test
-    void shouldDeleteBook() throws Exception {
+    void shouldDeleteBook() {
         BookDto bookToDelete = getBooks().getFirst();
 
-        String uri = "/api/v1/book/" + bookToDelete.id();
-        mvc.perform(delete(uri))
-                .andExpect(status().isNoContent());
+        when(bookService.deleteById(bookToDelete.id())).thenReturn(Mono.empty());
+
+        String uri = "/flux/book/" + bookToDelete.id();
+        wtc.delete().uri(uri).exchange()
+                .expectStatus().isNoContent();
+
         Mockito.verify(bookService, Mockito.times(1)).deleteById(bookToDelete.id());
     }
 
     @Test
-    void shouldThrowExceptionWhenBookNotFoundOnEdit() throws Exception {
-        when(bookService.findById(-1L)).thenThrow(EntityNotFoundException.class);
+    void shouldThrowExceptionWhenBookNotFoundOnEdit() {
+        when(bookService.findById("-1")).thenReturn(Mono.error(new EntityNotFoundException("")));
+        wtc.get().uri("/flux/book/-1").exchange()
+                .expectStatus().isNotFound();
 
-        mvc.perform(get("/api/v1/book/" + -1L))
-                .andExpect(status().isNotFound());
-
-        when(bookService.findById(-2L)).thenThrow(NullPointerException.class);
-        mvc.perform(get("/api/v1/book/" + -2L))
-                .andExpect(status().isInternalServerError());
+        when(bookService.findById("-2")).thenReturn(Mono.error(new NullPointerException()));
+        wtc.get().uri("/flux/book/-2").exchange()
+                .expectStatus().is5xxServerError();
     }
 
     @Test
     void shouldReturnBadRequestOnWrongCreateBody() throws Exception {
-        mvc.perform(post("/api/v1/book").contentType("application/json")
-                .content("""
+        wtc.post().uri("/flux/book").contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("""
                         {
                         "id": 0,
                         "authorId": 2,
                         "genreIds": [1, 3]
-                        }"""))
-                .andExpect(status().isBadRequest());
+                        }""")
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }

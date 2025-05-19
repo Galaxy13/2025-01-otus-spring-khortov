@@ -2,10 +2,14 @@ package com.galaxy13.hw.route.handler;
 
 import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.dto.upsert.GenreUpsertDto;
+import com.galaxy13.hw.route.validator.UpsertDtoValidator;
 import com.galaxy13.hw.service.GenreService;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -21,6 +25,8 @@ public class GenreHandler {
 
     private final GenreService genreService;
 
+    private final UpsertDtoValidator validator;
+
     public Mono<ServerResponse> getAllGenres(ServerRequest request) {
         return ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -34,8 +40,8 @@ public class GenreHandler {
     }
 
     public Mono<ServerResponse> createGenre(ServerRequest request) {
-        return request.bodyToMono(GenreUpsertDto.class)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
+        return request.bodyToMono(GenreUpsertDto.class).doOnNext(this::validate)
+                .onErrorResume(e -> Mono.error(new IllegalArgumentException(e.getMessage())))
                 .flatMap(genreService::create)
                 .flatMap(savedGenre -> created(URI.create("/genre/" + savedGenre.id()))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -45,8 +51,8 @@ public class GenreHandler {
     public Mono<ServerResponse> updateGenre(ServerRequest request) {
         String id = request.pathVariable("id");
 
-        return request.bodyToMono(GenreUpsertDto.class)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
+        return request.bodyToMono(GenreUpsertDto.class).doOnNext(this::validate)
+                .onErrorResume(e -> Mono.error(new IllegalArgumentException(e.getMessage())))
                 .flatMap(dto -> {
                     if (dto.id() != null && !dto.id().equals(id)) {
                         return Mono.error(new IllegalArgumentException("ID in path and body must match"));
@@ -55,5 +61,13 @@ public class GenreHandler {
                 })
                 .flatMap(updatedGenre -> ok().contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(updatedGenre));
+    }
+
+    private void validate(GenreUpsertDto genre) {
+        Errors errors = new BeanPropertyBindingResult(genre, "genre");
+        validator.validate(genre, errors);
+        if (errors.hasErrors()) {
+            throw new ValidationException(errors.toString());
+        }
     }
 }

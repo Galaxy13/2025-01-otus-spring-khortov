@@ -44,7 +44,7 @@ public class AuthorServiceImpl implements AuthorService {
         String id = updatedAuthor.id();
         return authorRepository.findById(id)
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Author with provided id to update not found")))
-                .flatMap( author -> {
+                .flatMap(author -> {
                     author.setFirstName(updatedAuthor.firstName());
                     author.setLastName(updatedAuthor.lastName());
                     return authorRepository.save(author);

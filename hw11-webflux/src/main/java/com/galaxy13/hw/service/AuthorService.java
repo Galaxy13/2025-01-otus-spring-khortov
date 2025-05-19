@@ -5,8 +5,6 @@ import com.galaxy13.hw.dto.upsert.AuthorUpsertDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 public interface AuthorService {
     Flux<AuthorDto> findAllAuthors();
 
