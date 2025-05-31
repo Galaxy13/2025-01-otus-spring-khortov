@@ -49,11 +49,14 @@
     >
       &times;
     </button>
+
+    <Toast v-if="toast.show" :message="toast.message" :type="toast.type" @close="toast.show = false" />
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useToastStore } from '@/components/store/toast.js'
 
 const props = defineProps({
   book: Object,
@@ -62,6 +65,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'save']);
+
+const toast = useToastStore();
 
 const localBook = ref({
   id: null,

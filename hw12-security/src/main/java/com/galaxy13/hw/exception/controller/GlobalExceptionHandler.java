@@ -3,6 +3,7 @@ package com.galaxy13.hw.exception.controller;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -44,5 +45,12 @@ public class GlobalExceptionHandler {
         log.error("Internal Server Error", ex);
         return ErrorResponse.create("Internal Server error",
                 HttpStatus.INTERNAL_SERVER_ERROR, request.getDescription(false));
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ErrorResponse handleAccessDeniedException(AccessDeniedException e, WebRequest request) {
+        return ErrorResponse.create(e.getMessage(),
+                HttpStatus.FORBIDDEN, request.getDescription(false));
     }
 }

@@ -1,4 +1,4 @@
-drop table if exists genres_relationships, authorRelationships, books, authors, genres;
+drop table if exists genres_relationships, authorRelationships, books, authors, genres, comments, credentials;
 
 create table authors
 (
@@ -27,10 +27,18 @@ create table genres_relationships
     primary key (book_id, genre_id)
 );
 
+create table credentials(
+    id        uuid primary key,
+    username  varchar(255) unique not null,
+    password  varchar(255) not null,
+    role      varchar(255) not null
+);
+
 create table comments
 (
     id           bigserial primary key,
     comment_text varchar(255) not null,
+    user_id      uuid references credentials (id) not null,
     book_id      bigint references books (id) on delete cascade
 );
 

@@ -10,7 +10,7 @@
         @view-comments="openCommentsModal"
     />
 
-    <BookModalModal
+    <BookModal
         v-if="showEditModal"
         :book="selectedBook"
         :authors="authors"
@@ -33,8 +33,9 @@ import bookApi from '@/api/book.js';
 import authorApi from '@/api/author.js';
 import genreApi from '@/api/genre.js';
 import BookTable from '@/components/book/BookTable.vue';
-import BookModalModal from '@/components/book/BookModal.vue';
+import BookModal from '@/components/book/BookModal.vue';
 import CommentModal from '@/components/book/CommentModal.vue';
+import { useToastStore } from '@/components/store/toast.js';
 
 const books = ref([]);
 const authors = ref([]);
@@ -49,6 +50,8 @@ const loadData = async () => {
   authors.value = await authorApi.getAuthors();
   genres.value = await genreApi.getGenres();
 };
+
+const toast = useToastStore();
 
 onMounted(loadData);
 
@@ -76,13 +79,25 @@ const closeModal = () => showEditModal.value = false;
 const closeCommentsModal = () => showCommentsModal.value = false;
 
 const saveBook = async (book) => {
-  if (book.id !== 0) {
-    await bookApi.updateBook(book);
-  } else {
-    await bookApi.createBook(book);
+  try {
+    if (book.id !== 0) {
+      await bookApi.updateBook(book);
+    } else {
+      await bookApi.createBook(book);
+    }
+    toast.showToast('Книга успешно сохранена!', 'success');
+    await loadData();
+    closeModal();
+  } catch (error) {
+    if (error.status === 403) {
+      toast.showToast('Ошибка: недостаточно прав для выполнения операции.', 'error');
+    } else {
+      const errorMessage = error?.response?.data?.message ||
+          error?.message ||
+          'Произошла ошибка при сохранении.';
+      toast.showToast(errorMessage, 'error');
+    }
   }
-  await loadData();
-  closeModal();
 };
 
 const deleteBook = async (id) => {

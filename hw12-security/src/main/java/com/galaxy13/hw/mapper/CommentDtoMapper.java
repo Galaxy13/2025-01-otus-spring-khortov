@@ -10,6 +10,7 @@ public class CommentDtoMapper implements Converter<Comment, CommentDto> {
 
     @Override
     public CommentDto convert(Comment source) {
+
         return new CommentDto(source.getId(), source.getText(), source.getBook().getId());
     }
 }

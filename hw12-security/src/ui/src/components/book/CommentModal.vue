@@ -8,8 +8,18 @@
 
     <ul v-else>
       <li v-for="comment in comments" :key="comment.id">
-        <input v-model="comment.text" @keyup.enter="saveComment(comment)" />
-        <button @click="saveComment(comment)">💾</button>
+        <input
+            v-if="comment.editAllowed"
+            v-model="comment.text"
+            @keyup.enter="saveComment(comment)"
+        />
+        <span v-else>{{ comment.text }}</span>
+        <button
+            v-if="comment.editAllowed"
+            @click="saveComment(comment)"
+        >
+          💾
+        </button>
       </li>
     </ul>
 
@@ -52,6 +62,9 @@ const fetchComments = async () => {
     loading.value = true;
     const response = await commentApi.getCommentsByBookId(props.bookId);
     comments.value = Array.isArray(response) ? response : [];
+    for (const comment of response) {
+      console.log(comment);
+    }
   } catch (error) {
     console.error('Error loading comments:', error);
     comments.value = [];
@@ -67,7 +80,8 @@ const saveComment = async (comment) => {
     await commentApi.updateComment({
       id: comment.id,
       text: comment.text,
-      bookId: props.bookId
+      bookId: props.bookId,
+      editAllowed: false
     });
   } catch (error) {
     console.error('Error saving comment:', error);
@@ -115,6 +129,7 @@ li {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  align-items: center;
 }
 
 .new-comment {
@@ -156,5 +171,4 @@ li {
   background: #4a6baf;
   color: #fff;
 }
-
 </style>
