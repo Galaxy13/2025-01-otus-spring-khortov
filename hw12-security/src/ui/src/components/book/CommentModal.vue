@@ -45,6 +45,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import commentApi from '@/api/comment.js';
+import {useToastStore} from "@/components/store/toast.js";
 
 const props = defineProps({
   bookId: {
@@ -52,10 +53,13 @@ const props = defineProps({
     required: true
   }
 });
+
 defineEmits(['close']);
 const comments = ref([]);
 const loading = ref(false);
 const newCommentText = ref('');
+
+const toast = useToastStore();
 
 const fetchComments = async () => {
   try {
@@ -83,8 +87,14 @@ const saveComment = async (comment) => {
       bookId: props.bookId,
       editAllowed: false
     });
+    toast.showToast('Комментарий успешно сохранён', 'success');
   } catch (error) {
-    console.error('Error saving comment:', error);
+    if (error?.response === 403) {
+      toast.showToast('Недостаточно прав для выполнения этой операции', 'error');
+    } else {
+      const errorMessage = error?.message || 'Произошла ошибка при сохранении комментария';
+      toast.showToast(errorMessage, 'error');
+    }
   }
 };
 

@@ -49,8 +49,11 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(id).orElseThrow(() ->
                 new EntityNotFoundException("No comment found with id: %d".formatted(id))
         );
-        CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!user.getId().equals(UUID.fromString(comment.getUserId()))) {
+        CustomUserDetails user = (CustomUserDetails)
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!user.getId().equals(UUID.fromString(comment.getUserId())) &&
+                user.getAuthorities().stream()
+                        .noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
             throw new AccessDeniedException("You do not have permission to update this comment");
         }
         comment.setText(commentDto.text());
@@ -69,7 +72,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setText(commentDto.text());
         comment.setUserId(user.getId().toString());
         CommentDto result = commentDtoMapper.convert(comment);
-        result.setEditAllowed(true);
+        result.isEditAllowed(true);
         return result;
     }
 
@@ -77,8 +80,8 @@ public class CommentServiceImpl implements CommentService {
         CustomUserDetails userDetails = (CustomUserDetails)
                 SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CommentDto commentDto = commentDtoMapper.convert(comment);
-        if (commentDto != null && comment.getUserId().equals(userDetails.getId().toString())){
-            commentDto.setEditAllowed(true);
+        if (commentDto != null && comment.getUserId().equals(userDetails.getId().toString())) {
+            commentDto.isEditAllowed(true);
         }
         return commentDto;
     }

@@ -1,7 +1,11 @@
 const BASE_URL = '/api/v1/'
 
 const handleResponse = async (response) => {
-    if (!response.ok) throw new Error(await response.text());
+    if (!response.ok) {
+        const error = new Error(await response.text());
+        error.status = response.status;
+        throw error;
+    }
     return response.json();
 };
 

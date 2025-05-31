@@ -90,10 +90,9 @@ const saveBook = async (book) => {
     closeModal();
   } catch (error) {
     if (error.status === 403) {
-      toast.showToast('Ошибка: недостаточно прав для выполнения операции.', 'error');
+      toast.showToast('Недостаточно прав для выполнения операции.', 'error');
     } else {
-      const errorMessage = error?.response?.data?.message ||
-          error?.message ||
+      const errorMessage = error?.message ||
           'Произошла ошибка при сохранении.';
       toast.showToast(errorMessage, 'error');
     }
@@ -102,8 +101,18 @@ const saveBook = async (book) => {
 
 const deleteBook = async (id) => {
   if (confirm(`Удалить книгу #${id}?`)) {
-    await bookApi.deleteBook(id);
-    await loadData();
+    try {
+      await bookApi.deleteBook(id);
+      await loadData();
+      toast.showToast('Книга успешно удалена', 'success');
+    } catch (error) {
+      if (error.status === 403) {
+        toast.showToast('Недостаточно прав для выполения операции', 'error');
+      } else {
+        const errorMessage = error?.message || 'Произошла ошибка при удалении.';
+        toast.showToast(errorMessage, 'error');
+      }
+    }
   }
 };
 </script>

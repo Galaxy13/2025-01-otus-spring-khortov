@@ -42,29 +42,6 @@
         @close="toast.show = false"
     />
 
-    <div v-if="showLoginModal" class="modal-overlay" @click.self="showLoginModal = false">
-      <div class="modal-content">
-        <h2>Login</h2>
-        <form @submit.prevent="login">
-          <div class="form-group">
-            <label for="username">Имя пользователя:</label>
-            <input id="username" v-model="loginForm.username" type="text" required>
-          </div>
-          <div class="form-group">
-            <label for="password">Пароль:</label>
-            <input id="password" v-model="loginForm.password" type="password" required>
-          </div>
-          <div class="form-group">
-            <label>
-              <input type="checkbox" v-model="loginForm.rememberMe"> Запомнить меня
-            </label>
-          </div>
-          <button type="submit" class="login-button">Войти</button>
-          <button type="button" @click="showLoginModal = false" class="login-cancel-button">Отмена</button>
-          <div v-if="loginError" class="error-message">{{ loginError }}</div>
-        </form>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -87,13 +64,6 @@ const showLoginModal = ref(false);
 const showAuthRequiredModal = ref(false);
 const isAuthenticated = ref(false);
 const username = ref('');
-const loginError = ref('');
-
-const loginForm = ref({
-  username: '',
-  password: '',
-  rememberMe: false
-});
 
 onMounted(async () => {
   try {
@@ -117,42 +87,6 @@ onMounted(async () => {
 });
 
 const toast = useToastStore();
-
-const login = async () => {
-  loginError.value = '';
-
-  const formData = new URLSearchParams();
-  formData.append('username', loginForm.value.username);
-  formData.append('password', loginForm.value.password);
-  if (loginForm.value.rememberMe) {
-    formData.append('remember-me', 'true');
-  }
-
-  try {
-    const response = await fetch('/login', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      credentials: 'include'
-    });
-
-    if (response.ok) {
-      isAuthenticated.value = true;
-      username.value = loginForm.value.username;
-      showLoginModal.value = false;
-      loginForm.value = { username: '', password: '', rememberMe: false };
-    } else {
-      const error = await response.json();
-      const errMsg = error.error;
-      loginError.value = errMsg || 'Login failed';
-    }
-  } catch (error) {
-    loginError.value = 'Network error during login';
-    console.error('Login failed:', error);
-  }
-};
 
 const logout = async () => {
   try {
@@ -280,9 +214,6 @@ const handleTabChange = (tab) => {
   margin-top: 0;
 }
 
-.form-group {
-  margin-bottom: 1rem;
-}
 
 .form-group label {
   display: block;
@@ -327,10 +258,5 @@ const handleTabChange = (tab) => {
   background: #4a6baf;
   color: white;
   font-weight: bold;
-}
-
-.error-message {
-  color: red;
-  margin-top: 1rem;
 }
 </style>

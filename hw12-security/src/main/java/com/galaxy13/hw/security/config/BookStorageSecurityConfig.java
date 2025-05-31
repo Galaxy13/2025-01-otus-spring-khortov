@@ -13,7 +13,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.UUID;
 
-
 @Configuration
 @EnableWebSecurity
 public class BookStorageSecurityConfig {
@@ -24,9 +23,7 @@ public class BookStorageSecurityConfig {
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/api/v1/user/current").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/**").authenticated()
@@ -34,22 +31,16 @@ public class BookStorageSecurityConfig {
                         .requestMatchers(HttpMethod.POST).hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT).hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE).hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginProcessingUrl("/login")
                         .successHandler((request, response, authentication) ->
-                                response.sendRedirect(request.getContextPath() + "/"))
-                        .permitAll()
-                )
+                                response.sendRedirect(request.getContextPath() + "/")).permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessHandler((request, response, authentication) ->
-                                response.sendRedirect("/login"))
-                        .deleteCookies("JSESSIONID")
-                )
-                .rememberMe(rm -> rm.key(rememberMeKey)
-                        .tokenValiditySeconds(600))
+                                response.sendRedirect("/login")).deleteCookies("JSESSIONID"))
+                .rememberMe(rm -> rm.key(rememberMeKey).tokenValiditySeconds(600))
                 .build();
     }
 

@@ -5,8 +5,10 @@ import com.galaxy13.hw.dto.GenreDto;
 import com.galaxy13.hw.dto.upsert.GenreUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.service.GenreService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,7 +26,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@DisplayName("Genre Controller Test (security disabled)")
 @WebMvcTest(controllers = GenreController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class GenreControllerTest {
 
     @Autowired

@@ -24,6 +24,7 @@ import { ref, onMounted } from 'vue';
 import genreApi from '@/api/genre.js';
 import GenreTable from '@/components/genre/GenreTable.vue';
 import GenreModal from '@/components/genre/GenreModal.vue';
+import {useToastStore} from "@/components/store/toast.js";
 
 const genres = ref([]);
 const selectedGenre = ref(null);
@@ -32,6 +33,8 @@ const showEditModal = ref(false);
 const loadData = async () => {
   genres.value = await genreApi.getGenres();
 };
+
+const toast = useToastStore();
 
 onMounted(loadData);
 
@@ -52,13 +55,23 @@ const saveGenre = async (genre) => {
     id: genre.id,
     name: genre.name,
   }
-  if (genre.id !== 0) {
-    await genreApi.updateGenre(genreDto);
-  } else {
-    await genreApi.createGenre(genreDto);
+  try {
+    if (genre.id !== 0) {
+      await genreApi.updateGenre(genreDto);
+    } else {
+      await genreApi.createGenre(genreDto);
+    }
+    await loadData();
+    toast.showToast('Жанр успешно сохранён', 'success');
+    closeModal();
+  } catch (error) {
+    if (error.status === 403) {
+      toast.showToast('Недостаточно прав для выполнения операции.', 'error');
+    } else {
+      const errorMessage = error?.message || 'Произошла ошибка при сохранении.'
+      toast.showToast(errorMessage, 'error');
+    }
   }
-  await loadData();
-  closeModal();
 };
 </script>
 

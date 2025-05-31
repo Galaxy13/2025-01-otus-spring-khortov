@@ -6,8 +6,10 @@ import com.galaxy13.hw.dto.upsert.AuthorUpsertDto;
 import com.galaxy13.hw.exception.EntityNotFoundException;
 import com.galaxy13.hw.exception.controller.GlobalExceptionHandler;
 import com.galaxy13.hw.service.AuthorService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -24,8 +26,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
+@DisplayName("Author Controller Test (security disabled)")
 @WebMvcTest(controllers = {AuthorController.class,})
 @Import(GlobalExceptionHandler.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AuthorControllerTest {
 
     @MockitoBean

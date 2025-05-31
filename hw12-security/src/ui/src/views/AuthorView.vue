@@ -24,6 +24,7 @@ import { ref, onMounted } from 'vue';
 import authorApi from '@/api/author.js';
 import AuthorTable from '@/components/author/AuthorTable.vue';
 import AuthorModal from '@/components/author/AuthorModal.vue';
+import { useToastStore } from '@/components/store/toast.js';
 
 const authors = ref([]);
 const selectedAuthor = ref(null);
@@ -32,6 +33,8 @@ const showEditModal = ref(false);
 const loadData = async () => {
   authors.value = await authorApi.getAuthors();
 };
+
+const toast = useToastStore();
 
 onMounted(loadData);
 
@@ -53,13 +56,24 @@ const saveAuthor = async (author) => {
     firstName: author.firstName,
     lastName: author.lastName,
   }
-  if (author.id !== 0) {
-    await authorApi.updateAuthor(authorDto);
-  } else {
-    await authorApi.createAuthor(authorDto);
+  try {
+    if (author.id !== 0) {
+      await authorApi.updateAuthor(authorDto);
+    } else {
+      await authorApi.createAuthor(authorDto);
+    }
+    toast.showToast('Автор успешно сохранён', 'success');
+    await loadData();
+    closeModal();
+  } catch (error) {
+    if (error.status === 403) {
+      toast.showToast('Недостаточно прав для выполнения операции.', 'error');
+    } else {
+      const errorMessage = error?.message ||
+          'Произошла ошибка при сохранении.';
+      toast.showToast(errorMessage, 'error');
+    }
   }
-  await loadData();
-  closeModal();
 };
 </script>
 
