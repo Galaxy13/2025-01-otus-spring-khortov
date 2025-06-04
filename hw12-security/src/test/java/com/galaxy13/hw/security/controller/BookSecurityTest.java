@@ -7,6 +7,7 @@ import com.galaxy13.hw.exception.controller.GlobalExceptionHandler;
 import com.galaxy13.hw.security.config.BookStorageSecurityConfig;
 import com.galaxy13.hw.service.BookService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @DisplayName("Book Controller Security Test")
 @WebMvcTest(controllers = BookController.class)
-@Import({BookStorageSecurityConfig.class, GlobalExceptionHandler.class,})
+@Import({BookStorageSecurityConfig.class, GlobalExceptionHandler.class})
 public class BookSecurityTest {
     private static final String BOOKS_PATH = "/api/v1/book";
 
@@ -39,63 +40,85 @@ public class BookSecurityTest {
     @MockitoBean
     private BookService bookService;
 
-    @WithMockUser(
-            username = "user",
-            authorities = {"ROLE_USER"}
-    )
-    @Test
-    void testAuthenticatedOnUser() throws Exception {
-        // All books
-        mvc.perform(get(BOOKS_PATH)).andExpect(status().isOk());
+    @Nested
+    @DisplayName("As User Role")
+    @WithMockUser(username = "user", authorities = {"ROLE_USER"})
+    class UserRoleTests {
 
-        // One book
-        mvc.perform(get(BOOKS_PATH + "/1")).andExpect(status().isOk());
+        @Test
+        void canGetAllBooks() throws Exception {
+            mvc.perform(get(BOOKS_PATH)).andExpect(status().isOk());
+        }
 
-        // Create (POST)
-        var createBookDto = new BookUpsertDto(0L, "title", 1L, Set.of(1L));
-        mvc.perform(post(BOOKS_PATH).accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createBookDto))
-        ).andExpect(status().isForbidden());
+        @Test
+        void canGetOneBook() throws Exception {
+            mvc.perform(get(BOOKS_PATH + "/1")).andExpect(status().isOk());
+        }
 
-        // Update (PUT)
-        var updateBookDto = new BookUpsertDto(1L, "new book", 1L, Set.of(1L));
-        mvc.perform(put(BOOKS_PATH + "/1").accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateBookDto))
-        ).andExpect(status().isForbidden());
+        @Test
+        void cannotCreateBook() throws Exception {
+            var createBookDto = new BookUpsertDto(0L, "title", 1L, Set.of(1L));
+            mvc.perform(post(BOOKS_PATH)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createBookDto)))
+                    .andExpect(status().isForbidden());
+        }
 
-        // Delete
-        mvc.perform(delete(BOOKS_PATH + "/1")).andExpect(status().isForbidden());
+        @Test
+        void cannotUpdateBook() throws Exception {
+            var updateBookDto = new BookUpsertDto(1L, "new book", 1L, Set.of(1L));
+            mvc.perform(put(BOOKS_PATH + "/1")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(updateBookDto)))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        void cannotDeleteBook() throws Exception {
+            mvc.perform(delete(BOOKS_PATH + "/1")).andExpect(status().isForbidden());
+        }
     }
 
-    @WithMockUser(
-            username = "admin",
-            authorities = {"ROLE_ADMIN"}
-    )
-    @Test
-    void testAuthenticatedOnAdmin() throws Exception {
-        // All books
-        mvc.perform(get(BOOKS_PATH)).andExpect(status().isOk());
+    @Nested
+    @DisplayName("As Admin Role")
+    @WithMockUser(username = "admin", authorities = {"ROLE_ADMIN"})
+    class AdminRoleTests {
 
-        // One book
-        mvc.perform(get(BOOKS_PATH + "/1")).andExpect(status().isOk());
+        @Test
+        void canGetAllBooks() throws Exception {
+            mvc.perform(get(BOOKS_PATH)).andExpect(status().isOk());
+        }
 
-        // Create (POST)
-        var createBookDto = new BookUpsertDto(0L, "new book", 1L, Set.of(1L));
-        mvc.perform(post(BOOKS_PATH).accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createBookDto))
-        ).andExpect(status().isCreated());
+        @Test
+        void canGetOneBook() throws Exception {
+            mvc.perform(get(BOOKS_PATH + "/1")).andExpect(status().isOk());
+        }
 
-        // Update (PUT)
-        var updateBookDto = new BookUpsertDto(1L, "title upd", 1L, Set.of(1L));
-        mvc.perform(put(BOOKS_PATH + "/1").accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateBookDto))
-        ).andExpect(status().isOk());
+        @Test
+        void canCreateBook() throws Exception {
+            var createBookDto = new BookUpsertDto(0L, "new book", 1L, Set.of(1L));
+            mvc.perform(post(BOOKS_PATH)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createBookDto))
+            ).andExpect(status().isCreated());
+        }
 
-        // Delete
-        mvc.perform(delete(BOOKS_PATH + "/1")).andExpect(status().isNoContent());
+        @Test
+        void canUpdateBook() throws Exception {
+            var updateBookDto = new BookUpsertDto(1L, "title upd", 1L, Set.of(1L));
+            mvc.perform(put(BOOKS_PATH + "/1")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(updateBookDto)))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        void canDeleteBook() throws Exception {
+            mvc.perform(delete(BOOKS_PATH + "/1")).andExpect(status().isNoContent());
+        }
     }
 }
