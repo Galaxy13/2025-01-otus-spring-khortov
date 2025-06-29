@@ -12,6 +12,7 @@ public class AuthorItemProcessor implements ItemProcessor<MongoAuthor, JpaAuthor
         JpaAuthor jpaAuthor = new JpaAuthor();
         jpaAuthor.setFirstName(author.getFirstName());
         jpaAuthor.setLastName(author.getLastName());
+        jpaAuthor.setMongoId(author.getId());
         return jpaAuthor;
     }
 }

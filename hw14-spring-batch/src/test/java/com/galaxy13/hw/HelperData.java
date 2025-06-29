@@ -12,8 +12,8 @@ public class HelperData {
 
     private static final List<JpaAuthor> AUTHORS = List.of(
             new JpaAuthor(1L, "Author_1", "Surname_1"),
-            new JpaAuthor(2L, "Author_2", "Surname_2"),
-            new JpaAuthor(3L, "Author_3", "Surname_3")
+            new JpaAuthor(2L, "Author_1", "Surname_1"),
+            new JpaAuthor(3L, "Author_2", "Surname_2")
     );
 
     private static final List<JpaGenre> GENRES = List.of(
@@ -27,8 +27,8 @@ public class HelperData {
 
     private static final List<JpaBook> BOOKS = List.of(
             new JpaBook(1L, "BookTitle_1", AUTHORS.getFirst(), Arrays.asList(GENRES.getFirst(), GENRES.get(1))),
-            new JpaBook(2L, "BookTitle_2", AUTHORS.get(1), Arrays.asList(GENRES.get(2), GENRES.get(3))),
-            new JpaBook(3L, "BookTitle_3", AUTHORS.get(2), Arrays.asList(GENRES.get(4), GENRES.get(5)))
+            new JpaBook(2L, "BookTitle_1", AUTHORS.get(1), Arrays.asList(GENRES.get(2), GENRES.get(3))),
+            new JpaBook(3L, "BookTitle_2", AUTHORS.get(2), Arrays.asList(GENRES.get(4), GENRES.get(5)))
     );
 
     private static final List<JpaComment> COMMENTS = List.of(

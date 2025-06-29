@@ -1,4 +1,10 @@
 DELETE
+FROM temp_book_id;
+DELETE
+FROM temp_author_id;
+DELETE
+FROM temp_genre_id;
+DELETE
 FROM comments;
 DELETE
 FROM genres_relationships;

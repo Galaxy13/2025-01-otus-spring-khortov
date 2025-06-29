@@ -7,13 +7,13 @@
     },
     {
       "_id": "2",
-      "firstName": "Author_2",
-      "lastName": "Surname_2"
+      "firstName": "Author_1",
+      "lastName": "Surname_1"
     },
     {
       "_id": "3",
-      "firstName": "Author_3",
-      "lastName": "Surname_3"
+      "firstName": "Author_2",
+      "lastName": "Surname_2"
     }
   ],
   "genres": [
@@ -64,11 +64,11 @@
     },
     {
       "_id": "2",
-      "title": "BookTitle_2",
+      "title": "BookTitle_1",
       "author": {
         "_id": "2",
-        "firstName": "Author_2",
-        "lastName": "Surname_2"
+        "firstName": "Author_1",
+        "lastName": "Surname_1"
       },
       "genres": [
         {
@@ -83,11 +83,11 @@
     },
     {
       "_id": "3",
-      "title": "BookTitle_3",
+      "title": "BookTitle_2",
       "author": {
         "_id": "3",
-        "firstName": "Author_3",
-        "lastName": "Surname_3"
+        "firstName": "Author_2",
+        "lastName": "Surname_2"
       },
       "genres": [
         {

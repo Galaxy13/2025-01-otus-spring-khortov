@@ -1,41 +1,51 @@
-drop table if exists genres_relationships, authorRelationships, books, authors, genres;
-
-create table authors
+CREATE TABLE authors
 (
     id        bigserial primary key,
     firstname varchar(255) not null,
     lastName  varchar(255)
 );
 
-create table genres
+CREATE TABLE genres
 (
     id          bigserial primary key,
     genre_title varchar(255) not null unique
 );
 
-create table books
+CREATE TABLE books
 (
     id        bigserial primary key,
-    title     varchar(255) not null unique,
+    title     varchar(255) not null,
     author_id bigint references authors (id) on delete cascade
 );
 
-create table genres_relationships
+CREATE TABLE genres_relationships
 (
     book_id  bigint references books (id) on delete cascade,
     genre_id bigint references genres (id) on delete cascade,
     primary key (book_id, genre_id)
 );
 
-create table comments
+CREATE TABLE comments
 (
     id           bigserial primary key,
     comment_text varchar(255) not null,
     book_id      bigint references books (id) on delete cascade
 );
 
-alter table authors
-    add constraint authorCreds unique (firstname, lastName);
+CREATE TABLE temp_author_id
+(
+    jpa_id      bigint references authors (id),
+    mongo_id    varchar(255) unique not null
+);
 
-alter table books
-    add constraint bookAuthor unique (title, author_id);
+CREATE TABLE temp_genre_id
+(
+    jpa_id      bigint references genres (id),
+    mongo_id    varchar(255) unique not null
+);
+
+CREATE TABLE temp_book_id
+(
+    jpa_id      bigint references books (id),
+    mongo_id    varchar(255) unique not null
+);

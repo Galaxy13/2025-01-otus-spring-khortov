@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,4 +51,14 @@ public class JpaBook {
     @JoinTable(name = "genres_relationships", joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private List<JpaGenre> genres;
+
+    @Transient
+    private String mongoId;
+
+    public JpaBook(long id, String title, JpaAuthor author, List<JpaGenre> genres) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.genres = genres;
+    }
 }

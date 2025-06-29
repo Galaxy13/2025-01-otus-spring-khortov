@@ -11,6 +11,7 @@ public class GenreItemProcessor implements ItemProcessor<MongoGenre, JpaGenre> {
     public JpaGenre process(MongoGenre genre) {
         JpaGenre jpaGenre = new JpaGenre();
         jpaGenre.setName(genre.getName());
+        jpaGenre.setMongoId(genre.getId());
         return jpaGenre;
     }
 }
