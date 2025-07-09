@@ -1,0 +1,41 @@
+spring:
+  shell:
+    interactive:
+      enabled: false
+    noninteractive:
+      enabled: false
+    command:
+      version:
+        enabled: false
+  data:
+    mongodb:
+      database: testdb
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testDb
+  sql:
+    init:
+      mode: always
+      schema-locations: schema.sql
+  jpa:
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+
+mongock:
+  enabled: false
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 4.0.5
+logging:
+  level:
+    de:
+      flapdoodle:
+        embed:
+          mongo:
+            WARN
+
