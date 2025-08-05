@@ -5,6 +5,7 @@ import com.galaxy13.hw.service.ItemFinalizeService;
 import com.galaxy13.hw.service.ItemRegistrationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.MessageChannels;
 import org.springframework.integration.dsl.PollerSpec;
@@ -24,7 +25,7 @@ public class IntegrationConfig {
     }
 
     @Bean
-    public MessageChannel registrationChannel() {
+    public PublishSubscribeChannel registrationChannel() {
         return MessageChannels.publishSubscribe().getObject();
     }
 
@@ -34,7 +35,7 @@ public class IntegrationConfig {
     }
 
     @Bean
-    public MessageChannel documentChannel() {
+    public PublishSubscribeChannel documentChannel() {
         return MessageChannels.publishSubscribe().getObject();
     }
 
