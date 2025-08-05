@@ -6,11 +6,11 @@ import com.galaxy13.hw.service.ItemRegistrationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.MessageChannelSpec;
 import org.springframework.integration.dsl.MessageChannels;
 import org.springframework.integration.dsl.PollerSpec;
 import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.scheduling.PollerMetadata;
+import org.springframework.messaging.MessageChannel;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -19,23 +19,23 @@ import java.util.concurrent.Executors;
 public class IntegrationConfig {
 
     @Bean
-    public MessageChannelSpec<?, ?> inputChannel() {
-        return MessageChannels.queue(5);
+    public MessageChannel inputChannel() {
+        return MessageChannels.queue(5).getObject();
     }
 
     @Bean
-    public MessageChannelSpec<?, ?> registrationChannel() {
-        return MessageChannels.publishSubscribe();
+    public MessageChannel registrationChannel() {
+        return MessageChannels.publishSubscribe().getObject();
     }
 
     @Bean
-    public MessageChannelSpec<?, ?> checkedItemsChannel() {
-        return MessageChannels.queue(20);
+    public MessageChannel checkedItemsChannel() {
+        return MessageChannels.queue(20).getObject();
     }
 
     @Bean
-    public MessageChannelSpec<?, ?> documentChannel() {
-        return MessageChannels.publishSubscribe();
+    public MessageChannel documentChannel() {
+        return MessageChannels.publishSubscribe().getObject();
     }
 
     @Bean(name = PollerMetadata.DEFAULT_POLLER)

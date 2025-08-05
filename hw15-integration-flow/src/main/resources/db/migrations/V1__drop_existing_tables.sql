@@ -1,8 +1,0 @@
-DROP TABLE IF EXISTS temp_book_id;
-DROP TABLE IF EXISTS temp_author_id;
-DROP TABLE IF EXISTS temp_genre_id;
-DROP TABLE IF EXISTS comments;
-DROP TABLE IF EXISTS genres_relationships;
-DROP TABLE IF EXISTS books;
-DROP TABLE IF EXISTS authors;
-DROP TABLE IF EXISTS genres;

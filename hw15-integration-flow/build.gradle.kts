@@ -24,11 +24,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-logging")
     implementation("org.springframework.boot:spring-boot-starter-integration")
+    implementation("org.springframework.shell:spring-shell-starter")
+    implementation("org.apache.commons:commons-lang3")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.integration:spring-integration-test")
 }
 
 dependencyManagement {
