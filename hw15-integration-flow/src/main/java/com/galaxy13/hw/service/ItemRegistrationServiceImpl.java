@@ -26,7 +26,7 @@ public class ItemRegistrationServiceImpl implements ItemRegistrationService {
         try {
             Thread.sleep(1500);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
         }
     }
 }

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ItemCheckServiceImpl implements ItemCheckService {
 
-
     @Override
     public CheckedItem check(RegisteredItem item) {
         log.info("Checking item: {} in progress...", item.name());
@@ -18,11 +17,11 @@ public class ItemCheckServiceImpl implements ItemCheckService {
         return new CheckedItem(item.name(), item.id());
     }
 
-    private void delay(){
+    private void delay() {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
         }
     }
 }

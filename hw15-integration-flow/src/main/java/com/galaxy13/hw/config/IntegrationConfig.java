@@ -39,6 +39,7 @@ public class IntegrationConfig {
         return MessageChannels.publishSubscribe().getObject();
     }
 
+    @SuppressWarnings("java:S6830")
     @Bean(name = PollerMetadata.DEFAULT_POLLER)
     public PollerSpec poller() {
         return Pollers.fixedRate(1000).maxMessagesPerPoll(5);

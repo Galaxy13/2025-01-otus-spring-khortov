@@ -19,9 +19,11 @@ import java.util.concurrent.Executors;
 @Command(description = "Integration command")
 @Slf4j
 @RequiredArgsConstructor
+@SuppressWarnings("java:S2245")
 public class IntegrationCommands {
 
-    private final static List<String> ITEMS = List.of("tv", "smartphone", "fridge", "headphones", "camera", "sensor panel");
+    private static final List<String> ITEMS =
+            List.of("tv", "smartphone", "fridge", "headphones", "camera", "sensor panel");
 
     private final WorkProcessGateway itemCheckService;
 

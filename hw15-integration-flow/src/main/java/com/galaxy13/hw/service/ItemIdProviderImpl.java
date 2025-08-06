@@ -11,4 +11,9 @@ public class ItemIdProviderImpl implements ItemIdProvider {
     public Long retrieveItemId() {
         return ++counter;
     }
+
+    @Override
+    public void reset() {
+        counter = 0L;
+    }
 }
