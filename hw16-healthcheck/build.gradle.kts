@@ -31,6 +31,7 @@ dependencies {
     runtimeOnly("com.h2database:h2")
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-data-rest")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

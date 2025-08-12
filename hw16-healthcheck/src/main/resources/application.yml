@@ -12,16 +12,26 @@ spring:
     show-sql: true
   jmx:
     enabled: true
+  data:
+    rest:
+      base-path: /datarest
+      detection-strategy: annotated
 
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health, logfile, metrics
   endpoint:
     health:
       show-details: always
+    logfile:
+      access: read_only
   health:
     defaults:
       enabled: true
+
+logging:
+  file:
+    name: /logs/appLog.log
 

@@ -1,5 +1,6 @@
 package com.galaxy13.hw.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -17,6 +18,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
