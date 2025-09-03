@@ -14,11 +14,15 @@ public class BookHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-        long books = bookRepository.count();
-        if (books == 0L) {
-            return Health.down()
-                    .withDetail("repository", "Book repository is empty!").build();
+        try {
+            long books = bookRepository.count();
+            if (books == 0L) {
+                return Health.down()
+                        .withDetail("repository", "Book repository is empty!").build();
+            }
+            return Health.up().build();
+        } catch (Exception e) {
+            return Health.down(e).build();
         }
-        return Health.up().build();
     }
 }
